@@ -41,8 +41,9 @@ import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -71,6 +72,7 @@ import org.zephyrsoft.trackworktime.timer.TimerManager;
 import org.zephyrsoft.trackworktime.util.BackupUtil;
 import org.zephyrsoft.trackworktime.util.DateTimeUtil;
 import org.zephyrsoft.trackworktime.util.ExternalNotificationManager;
+import org.zephyrsoft.trackworktime.util.FilterableTaskAdapter;
 import org.zephyrsoft.trackworktime.util.FileUtil;
 import org.zephyrsoft.trackworktime.util.ForeignCall;
 import org.zephyrsoft.trackworktime.util.PermissionsUtil;
@@ -159,7 +161,9 @@ public class WorkTimeTrackerActivity extends AppCompatActivity
 	private ExternalNotificationManager externalNotificationManager = null;
 	private boolean reloadTasksOnResume = false;
 	private List<Task> tasks;
-	
+	private FilterableTaskAdapter tasksAdapter;
+	private boolean sortTasksByLastUsed = false;
+
 	private WeekAdapter weekAdapter;
 
 	private void checkAllOptions() {
@@ -217,6 +221,25 @@ public class WorkTimeTrackerActivity extends AppCompatActivity
 		binding.main.previous.setOnClickListener(v -> changeDisplayedWeek(-1));
 		binding.main.next.setOnClickListener(v -> changeDisplayedWeek(1));
 
+		// Initialize task sort toggle
+		sortTasksByLastUsed = preferences.getBoolean(getString(R.string.keyTaskSortByLastUsed), false);
+		updateSortToggleIcon();
+		binding.main.taskSortToggle.setOnClickListener(v -> {
+			sortTasksByLastUsed = !sortTasksByLastUsed;
+			preferences.edit()
+				.putBoolean(getString(R.string.keyTaskSortByLastUsed), sortTasksByLastUsed)
+				.apply();
+			updateSortToggleIcon();
+			refreshView();
+		});
+
+		// Set up task autocomplete listener
+		binding.main.task.setOnItemClickListener((parent, view, position, id) -> {
+			Task selectedTask = tasksAdapter.getItem(position);
+			if (selectedTask != null) {
+				binding.main.task.setTag(selectedTask);
+			}
+		});
 
 		initWeekPager(savedInstanceState);
 
@@ -446,7 +469,18 @@ public class WorkTimeTrackerActivity extends AppCompatActivity
 		// commit text field
 		binding.main.text.clearFocus();
 
-		Task selectedTask = (Task) binding.main.task.getSelectedItem();
+		Task selectedTask = (Task) binding.main.task.getTag();
+		if (selectedTask == null && tasksAdapter != null && tasksAdapter.getCount() > 0) {
+			// Fallback: try to find task by displayed text
+			String text = binding.main.task.getText().toString();
+			for (int i = 0; i < tasksAdapter.getCount(); i++) {
+				Task task = tasksAdapter.getItem(i);
+				if (task != null && task.toString().equals(text)) {
+					selectedTask = task;
+					break;
+				}
+			}
+		}
 		String description = binding.main.text.getText() == null
 			? null
 			: binding.main.text.getText().toString();
@@ -540,16 +574,7 @@ public class WorkTimeTrackerActivity extends AppCompatActivity
 			taskToSelect = dao.getDefaultTask();
 		}
 		setupTasksAdapter();
-		if (taskToSelect != null) {
-			int i = 0;
-			for (Task oneTask : tasks) {
-				if (oneTask.getId().equals(taskToSelect.getId())) {
-					binding.main.task.setSelection(i);
-					break;
-				}
-				i++;
-			}
-		}
+		selectTaskInAutoComplete(taskToSelect);
 
 		weekAdapter.notifyDataSetChanged();
 		refreshRecenterMenuItem();
@@ -579,10 +604,36 @@ public class WorkTimeTrackerActivity extends AppCompatActivity
 	}
 
 	private void setupTasksAdapter() {
-		tasks = dao.getActiveTasks();
-		ArrayAdapter<Task> tasksAdapter = new ArrayAdapter<>(this, R.layout.list_item_spinner, tasks);
-		tasksAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		if (sortTasksByLastUsed) {
+			tasks = dao.getActiveTasksSortedByLastUsed();
+		} else {
+			tasks = dao.getActiveTasks();
+		}
+		tasksAdapter = new FilterableTaskAdapter(this, R.layout.list_item_spinner, tasks);
 		binding.main.task.setAdapter(tasksAdapter);
+	}
+
+	private void updateSortToggleIcon() {
+		if (sortTasksByLastUsed) {
+			binding.main.taskSortToggle.setImageResource(R.drawable.ic_sort_by_time);
+			binding.main.taskSortToggle.setContentDescription(getString(R.string.taskSortAlphabetically));
+		} else {
+			binding.main.taskSortToggle.setImageResource(R.drawable.ic_sort_alphabetical);
+			binding.main.taskSortToggle.setContentDescription(getString(R.string.taskSortByLastUsed));
+		}
+	}
+
+	private void selectTaskInAutoComplete(Task taskToSelect) {
+		if (taskToSelect != null && tasksAdapter != null) {
+			int position = tasksAdapter.getPositionById(taskToSelect.getId());
+			if (position >= 0) {
+				Task selectedTask = tasksAdapter.getItem(position);
+				if (selectedTask != null) {
+					binding.main.task.setText(selectedTask.toString(), false);
+					binding.main.task.setTag(selectedTask);
+				}
+			}
+		}
 	}
 
 	/**

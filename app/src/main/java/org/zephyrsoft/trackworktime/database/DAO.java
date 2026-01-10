@@ -197,6 +197,37 @@ public class DAO {
 	}
 
 	/**
+	 * Get all active tasks, ordered by last usage (most recently used first).
+	 * Tasks that have never been used appear at the end, sorted alphabetically.
+	 *
+	 * @return all active tasks sorted by last usage time descending
+	 */
+	public synchronized List<Task> getActiveTasksSortedByLastUsed() {
+		open();
+		List<Task> ret = new ArrayList<>();
+
+		String query = "SELECT t." + TASK_ID + ", t." + TASK_NAME + ", t." + TASK_ACTIVE
+			+ ", t." + TASK_ORDERING + ", t." + TASK_DEFAULT
+			+ " FROM " + TASK + " t"
+			+ " LEFT JOIN " + EVENT + " e ON t." + TASK_ID + " = e." + EVENT_TASK
+			+ " WHERE t." + TASK_ACTIVE + " != 0"
+			+ " GROUP BY t." + TASK_ID
+			+ " ORDER BY CASE WHEN MAX(e." + EVENT_TIME + ") IS NULL THEN 1 ELSE 0 END,"
+			+ " MAX(e." + EVENT_TIME + ") DESC,"
+			+ " t." + TASK_NAME + " ASC";
+
+		Cursor cursor = db.rawQuery(query, null);
+		cursor.moveToFirst();
+		while (!cursor.isAfterLast()) {
+			Task task = cursorToTask(cursor);
+			ret.add(task);
+			cursor.moveToNext();
+		}
+		cursor.close();
+		return ret;
+	}
+
+	/**
 	 * Get the default task.
 	 *
 	 * @return the default task or {@code null} (if no task was marked as default or if the default task is deactivated)

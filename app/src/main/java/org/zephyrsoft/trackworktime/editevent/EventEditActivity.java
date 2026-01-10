@@ -16,12 +16,13 @@
 package org.zephyrsoft.trackworktime.editevent;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
-import android.widget.Spinner;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -43,6 +44,7 @@ import org.zephyrsoft.trackworktime.model.Week;
 import org.zephyrsoft.trackworktime.timer.TimerManager;
 import org.zephyrsoft.trackworktime.ui.DateTextViewController;
 import org.zephyrsoft.trackworktime.util.BroadcastUtil;
+import org.zephyrsoft.trackworktime.util.FilterableTaskAdapter;
 import org.zephyrsoft.trackworktime.util.ThemeUtil;
 
 import java.time.LocalDate;
@@ -61,13 +63,15 @@ public class EventEditActivity extends AppCompatActivity {
 
 	private DAO dao = null;
 	private TimerManager timerManager = null;
+	private SharedPreferences preferences = null;
 
-	private Spinner task = null;
+	private AutoCompleteTextView task = null;
 	private EditText text = null;
 	private EventBinding binding;
 	private boolean pickersAreInitialized = false;
 	private List<Task> tasks;
-	private ArrayAdapter<Task> tasksAdapter;
+	private FilterableTaskAdapter tasksAdapter;
+	private boolean sortTasksByLastUsed = false;
 
 	/** saved here so the resume can access the original value given via intent */
 	private long epochDay = -1;
@@ -96,6 +100,7 @@ public class EventEditActivity extends AppCompatActivity {
 
 		dao = Basics.get(this).getDao();
 		timerManager = Basics.get(this).getTimerManager();
+		preferences = Basics.get(this).getPreferences();
 
 		binding = EventBinding.inflate(getLayoutInflater());
 		setContentView(binding.getRoot());
@@ -110,10 +115,28 @@ public class EventEditActivity extends AppCompatActivity {
 		text = binding.text;
 
 		binding.radioClockIn.setOnCheckedChangeListener((buttonView, isChecked) -> setTaskAndTextVisible(isChecked));
-		tasks = dao.getActiveTasks();
-		tasksAdapter = new ArrayAdapter<>(this, R.layout.list_item_spinner, tasks);
-		tasksAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		task.setAdapter(tasksAdapter);
+
+		// Initialize task sort toggle
+		sortTasksByLastUsed = preferences.getBoolean(getString(R.string.keyTaskSortByLastUsed), false);
+		updateSortToggleIcon();
+		binding.taskSortToggle.setOnClickListener(v -> {
+			sortTasksByLastUsed = !sortTasksByLastUsed;
+			preferences.edit()
+				.putBoolean(getString(R.string.keyTaskSortByLastUsed), sortTasksByLastUsed)
+				.apply();
+			updateSortToggleIcon();
+			reloadTasks();
+		});
+
+		reloadTasks();
+
+		// Set up task autocomplete listener
+		task.setOnItemClickListener((parent, view, position, id) -> {
+			Task selectedTask = tasksAdapter.getItem(position);
+			if (selectedTask != null) {
+				task.setTag(selectedTask);
+			}
+		});
 
 		timeTextViewController.setListener(lt -> {
 			if (period && lt.isAfter(LocalTime.of(23, 58))) {
@@ -144,7 +167,7 @@ public class EventEditActivity extends AppCompatActivity {
 					return;
 				}
 
-				Task selectedTask = (Task) task.getSelectedItem();
+				Task selectedTask = getSelectedTask();
 				if (selectedTask == null) {
 					showMsgTaskNotSelected();
 					return;
@@ -165,7 +188,7 @@ public class EventEditActivity extends AppCompatActivity {
 					return;
 				}
 
-				Task selectedTask = (Task) task.getSelectedItem();
+				Task selectedTask = getSelectedTask();
 				if (typeEnum == TypeEnum.CLOCK_IN && selectedTask == null) {
 					showMsgTaskNotSelected();
 					return;
@@ -223,6 +246,55 @@ public class EventEditActivity extends AppCompatActivity {
 		int visibility = visible ? View.VISIBLE : View.GONE;
 		binding.taskLayout.setVisibility(visibility);
 		binding.textLayout.setVisibility(visibility);
+	}
+
+	private void updateSortToggleIcon() {
+		if (sortTasksByLastUsed) {
+			binding.taskSortToggle.setImageResource(R.drawable.ic_sort_by_time);
+			binding.taskSortToggle.setContentDescription(getString(R.string.taskSortAlphabetically));
+		} else {
+			binding.taskSortToggle.setImageResource(R.drawable.ic_sort_alphabetical);
+			binding.taskSortToggle.setContentDescription(getString(R.string.taskSortByLastUsed));
+		}
+	}
+
+	private void reloadTasks() {
+		if (sortTasksByLastUsed) {
+			tasks = dao.getActiveTasksSortedByLastUsed();
+		} else {
+			tasks = dao.getActiveTasks();
+		}
+		tasksAdapter = new FilterableTaskAdapter(this, R.layout.list_item_spinner, tasks);
+		task.setAdapter(tasksAdapter);
+	}
+
+	private void selectTaskInAutoComplete(Task taskToSelect) {
+		if (taskToSelect != null && tasksAdapter != null) {
+			int position = tasksAdapter.getPositionById(taskToSelect.getId());
+			if (position >= 0) {
+				Task selectedTask = tasksAdapter.getItem(position);
+				if (selectedTask != null) {
+					task.setText(selectedTask.toString(), false);
+					task.setTag(selectedTask);
+				}
+			}
+		}
+	}
+
+	private Task getSelectedTask() {
+		Task selectedTask = (Task) task.getTag();
+		if (selectedTask == null && tasksAdapter != null && tasksAdapter.getCount() > 0) {
+			// Fallback: try to find task by displayed text
+			String text = task.getText().toString();
+			for (int i = 0; i < tasksAdapter.getCount(); i++) {
+				Task t = tasksAdapter.getItem(i);
+				if (t != null && t.toString().equals(text)) {
+					selectedTask = t;
+					break;
+				}
+			}
+		}
+		return selectedTask;
 	}
 
 	@Override
@@ -308,13 +380,9 @@ public class EventEditActivity extends AppCompatActivity {
 	}
 
 	private void updateSelectedTask(Integer taskId) {
-		for (int i = 0; i < task.getCount(); i++) {
-			Task taskItem = (Task) task.getItemAtPosition(i);
-			if (taskItem != null && taskItem.getId() != null && taskItem.getId().equals(taskId)) {
-				task.setSelection(i);
-				break;
-			}
-		}
+		if (taskId == null) return;
+		Task taskToSelect = dao.getTask(taskId);
+		selectTaskInAutoComplete(taskToSelect);
 	}
 
 	private void updateDateAndTimePickers(LocalDateTime dateTime) {

@@ -352,4 +352,7 @@
         <item>2</item>
         <item>-1</item>
     </string-array>
+    <string name="taskSortByLastUsed">Sort by last used</string>
+    <string name="taskSortAlphabetically">Sort alphabetically</string>
+    <string name="taskSortToggleDescription">Toggle task sorting</string>
 </resources>
