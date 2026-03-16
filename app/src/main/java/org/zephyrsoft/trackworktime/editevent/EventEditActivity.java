@@ -361,7 +361,7 @@ public class EventEditActivity extends AppCompatActivity {
 				updateDateAndTimePickers(week.getStart().atStartOfDay(timerManager.getHomeTimeZone()));
 			}
 
-			Task defaultTask = dao.getDefaultTask();
+			Task defaultTask = timerManager.getDefaultTask();
 			if (defaultTask != null) {
 				updateSelectedTask(defaultTask.getId());
 			}

@@ -571,7 +571,7 @@ public class WorkTimeTrackerActivity extends AppCompatActivity
 			taskToSelect = timerManager.getCurrentTask();
 		} else {
 			binding.main.clockInButton.setText(R.string.clockIn);
-			taskToSelect = dao.getDefaultTask();
+			taskToSelect = timerManager.getDefaultTask();
 		}
 		setupTasksAdapter();
 		selectTaskInAutoComplete(taskToSelect);

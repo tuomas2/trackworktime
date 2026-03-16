@@ -238,6 +238,30 @@ public class DAO {
 	}
 
 	/**
+	 * Get the most recently used active task based on the latest event time.
+	 *
+	 * @return the most recently used task or {@code null} if no events exist
+	 */
+	public synchronized Task getMostRecentlyUsedTask() {
+		open();
+		String query = "SELECT t." + TASK_ID + ", t." + TASK_NAME + ", t." + TASK_ACTIVE
+			+ ", t." + TASK_ORDERING + ", t." + TASK_DEFAULT
+			+ " FROM " + TASK + " t"
+			+ " JOIN " + EVENT + " e ON t." + TASK_ID + " = e." + EVENT_TASK
+			+ " WHERE t." + TASK_ACTIVE + " != 0"
+			+ " ORDER BY e." + EVENT_TIME + " DESC"
+			+ " LIMIT 1";
+
+		Cursor cursor = db.rawQuery(query, null);
+		Task task = null;
+		if (cursor.moveToFirst()) {
+			task = cursorToTask(cursor);
+		}
+		cursor.close();
+		return task;
+	}
+
+	/**
 	 * Get the task with a specific ID.
 	 *
 	 * @param id
