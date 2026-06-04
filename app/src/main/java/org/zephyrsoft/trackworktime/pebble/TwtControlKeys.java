@@ -3,9 +3,10 @@ package org.zephyrsoft.trackworktime.pebble;
 import java.util.UUID;
 
 /**
- * AppMessage keys + UUID for the TWT Control watchapp. Integers are PLACEHOLDERS until pinned
- * from twt-control/build/js/message_keys.json (later task). Independent key space from the
- * watchface's TWT_* keys (messages route by UUID).
+ * AppMessage keys + UUID for the TWT Control watchapp. Integers are PINNED from
+ * twt-control/build/js/message_keys.json (verified against build output: CMD=10000,
+ * CMD_TASK_ID=10001, ST_TRACKING=10002, ST_TASK_NAME=10003, ST_WORKED_MIN=10004,
+ * TASK_LIST=10005). Independent key space from the watchface's TWT_* keys (messages route by UUID).
  */
 public final class TwtControlKeys {
 
