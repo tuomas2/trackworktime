@@ -50,9 +50,18 @@ public class PebbleStatusPusher implements Updatable {
             boolean tracking = latest != null
                     && latest.getType().equals(TypeEnum.CLOCK_IN.getValue());
 
-            Task current = timerManager.getCurrentTask();
-            int taskId = current != null ? current.getId() : 0;
-            String taskName = current != null ? current.getName() : "";
+            // Derive the task from the SAME latest event as the tracking flag, so the snapshot
+            // is internally consistent (avoids a transient tracking=true / task=null at the
+            // exact event-creation instant that calling getCurrentTask() separately could cause).
+            int taskId = 0;
+            String taskName = "";
+            if (tracking && latest.getTask() != null) {
+                taskId = latest.getTask();
+                Task task = dao.getTask(latest.getTask());
+                if (task != null) {
+                    taskName = task.getName();
+                }
+            }
 
             int totalWorkedTodayMin = (int) timerManager.calculateTimeSum(LocalDate.now(), PeriodEnum.DAY);
             long segmentStartEpoch = tracking ? latest.getDateTime().toEpochSecond() : 0L;
