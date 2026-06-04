@@ -61,6 +61,7 @@ import org.zephyrsoft.trackworktime.location.WifiTrackerService;
 import org.zephyrsoft.trackworktime.model.PeriodEnum;
 import org.zephyrsoft.trackworktime.options.Key;
 import org.zephyrsoft.trackworktime.pebble.PebbleStatusPusher;
+import org.zephyrsoft.trackworktime.pebble.TwtControlHandler;
 
 import com.getpebble.android.kit.PebbleKit;
 import org.zephyrsoft.trackworktime.timer.TimeCalculator;
@@ -134,6 +135,7 @@ public class Basics {
                 if (pebbleStatusPusher != null) pebbleStatusPusher.pushStatus();
             }
         });
+        PebbleKit.registerReceivedDataHandler(context, new TwtControlHandler());
 
         initTinyLog();
 
