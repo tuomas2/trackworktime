@@ -8,7 +8,7 @@ import com.getpebble.android.kit.util.PebbleDictionary;
 import org.pmw.tinylog.Logger;
 
 /** Serialises a {@link PebbleStatus} and sends it to the TimeStyle watchface. */
-public class PebbleStatusSender {
+public final class PebbleStatusSender {
 
     private final Context context;
 
@@ -23,6 +23,8 @@ public class PebbleStatusSender {
             dict.addInt32(TwtPebbleKeys.TWT_TASK_ID, status.taskId());
             dict.addString(TwtPebbleKeys.TWT_TASK_NAME, status.taskName());
             dict.addInt32(TwtPebbleKeys.TWT_WORKED_BEFORE_MIN, status.workedBeforeMin());
+            // Epoch seconds sent as int32: the AppMessage field and the watch both use int32,
+            // so this silently wraps after 2038-01-19 (Y2038). Accepted for v1.
             dict.addInt32(TwtPebbleKeys.TWT_SEGMENT_START, (int) status.segmentStartEpoch());
             PebbleKit.sendDataToPebble(context, TwtPebbleKeys.TIMESTYLE_UUID, dict);
         } catch (Exception e) {

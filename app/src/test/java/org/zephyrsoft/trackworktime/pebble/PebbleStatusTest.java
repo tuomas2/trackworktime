@@ -29,6 +29,12 @@ public class PebbleStatusTest {
     public void taskNameIsTruncatedToFitWatchBuffer() {
         String longName = "This is a very long task name beyond the buffer size";
         PebbleStatus s = PebbleStatus.of(true, 1, longName, 0, 5L, 5L);
-        assertThat(s.taskName().length()).isAtMost(PebbleStatus.MAX_TASK_NAME_LEN);
+        assertThat(s.taskName().length()).isEqualTo(PebbleStatus.MAX_TASK_NAME_LEN);
+    }
+
+    @Test
+    public void nullTaskNameBecomesEmptyString() {
+        PebbleStatus s = PebbleStatus.of(true, 1, null, 0, 5L, 5L);
+        assertThat(s.taskName()).isEqualTo("");
     }
 }
