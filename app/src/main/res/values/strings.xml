@@ -254,6 +254,8 @@
     <string name="targetTime">Target Time</string>
     <string name="pebbleNotification">Notification on Pebble</string>
     <string name="pebbleNotificationDescription">notify events on connected Pebble watch</string>
+    <string name="pebbleStatus">Show status on Pebble watchface</string>
+    <string name="pebbleStatusSummary">Send the current task and today\'s worked time to the TimeStyle watchface</string>
     <string name="wifiBasedTrackingCheckInterval">Wi-Fi check interval</string>
     <string name="wifiBasedTrackingCheckIntervalDescription">search for Wi-Fi networks only in this interval (smaller is more exact, but uses slightly more battery)</string>
     <string name="wifiBasedTrackingCheckIntervalDescriptionExtension">numbers between 1 and 60 are allowed (interpreted as minutes)</string>

@@ -190,6 +190,11 @@
             android:title="@string/pebbleNotification"
             android:summary="@string/pebbleNotificationDescription" />
         <CheckBoxPreference
+            android:key="@string/keyPebbleStatus"
+            android:title="@string/pebbleStatus"
+            android:summary="@string/pebbleStatusSummary"
+            android:defaultValue="false" />
+        <CheckBoxPreference
             android:key="@string/keyNeverUpdatePersistentNotification"
             android:summary="@string/neverUpdatePersistentNotificationDescription"
             android:title="@string/neverUpdatePersistentNotification" />
