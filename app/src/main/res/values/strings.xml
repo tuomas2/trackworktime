@@ -260,6 +260,8 @@
     <string name="userInterface">User Interface</string>
     <string name="showDecimalTimeAmounts">Decimal time amounts</string>
     <string name="showDecimalTimeAmountsDescription">in the main table, show time sums also as decimal number additionally to the normal representation with hours and minutes</string>
+    <string name="defaultTaskLastUsed">Last used task as default</string>
+    <string name="defaultTaskLastUsedDescription">automatically use the most recently used task as the default task</string>
     <string name="newPeriod">New Period</string>
     <string name="editPeriod">Edit Period</string>
     <string name="start">Start</string>
@@ -352,4 +354,7 @@
         <item>2</item>
         <item>-1</item>
     </string-array>
+    <string name="taskSortByLastUsed">Sort by last used</string>
+    <string name="taskSortAlphabetically">Sort alphabetically</string>
+    <string name="taskSortToggleDescription">Toggle task sorting</string>
 </resources>

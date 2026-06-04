@@ -119,8 +119,8 @@ public class ThirdPartyReceiver extends BroadcastReceiver {
 
 	// also used by ShortcutReceiver
 	static Integer getDefaultTaskId(Context context) {
-		DAO dao = Basics.get(context).getDao();
-		Task task = dao.getDefaultTask();
+		TimerManager timerManager = Basics.get(context).getTimerManager();
+		Task task = timerManager.getDefaultTask();
 		return task == null ? null : task.getId();
 	}
 

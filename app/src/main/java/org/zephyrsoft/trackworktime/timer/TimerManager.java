@@ -237,9 +237,19 @@ public class TimerManager {
 	}
 
 	/**
-	 * Returns the default task or {@code null} if no task is configured.
+	 * Returns the effective default task, respecting the "last used task as default" preference.
+	 * If the preference is enabled, returns the most recently used task (falling back to the
+	 * manually set default task if no events exist). Otherwise returns the manually set default task.
+	 *
+	 * @return the default task or {@code null} if no task is configured
 	 */
 	public Task getDefaultTask() {
+		if (preferences.getBoolean(context.getString(R.string.keyDefaultTaskLastUsed), false)) {
+			Task lastUsed = dao.getMostRecentlyUsedTask();
+			if (lastUsed != null) {
+				return lastUsed;
+			}
+		}
 		return dao.getDefaultTask();
 	}
 

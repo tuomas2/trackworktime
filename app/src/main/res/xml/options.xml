@@ -92,6 +92,10 @@
             android:key="@string/keyShowDecimalTimeAmounts"
             android:title="@string/showDecimalTimeAmounts"
             android:summary="@string/showDecimalTimeAmountsDescription" />
+        <CheckBoxPreference
+            android:key="@string/keyDefaultTaskLastUsed"
+            android:title="@string/defaultTaskLastUsed"
+            android:summary="@string/defaultTaskLastUsedDescription" />
     </PreferenceCategory>
 
     <PreferenceCategory

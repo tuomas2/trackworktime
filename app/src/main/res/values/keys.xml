@@ -63,5 +63,7 @@
     <string name="keyLoggingCategory">keyLoggingCategory</string>
     <string name="keyLogVisibleNetworks">keyLogVisibleNetworks</string>
     <string name="keyNightMode">keyNightMode</string>
+    <string name="keyTaskSortByLastUsed">keyTaskSortByLastUsed</string>
+    <string name="keyDefaultTaskLastUsed">keyDefaultTaskLastUsed</string>
 
 </resources>
