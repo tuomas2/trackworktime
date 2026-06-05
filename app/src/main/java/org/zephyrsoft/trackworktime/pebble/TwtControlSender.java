@@ -2,8 +2,7 @@ package org.zephyrsoft.trackworktime.pebble;
 
 import android.content.Context;
 
-import com.getpebble.android.kit.PebbleKit;
-import com.getpebble.android.kit.util.PebbleDictionary;
+import io.rebble.pebblekit2.common.model.PebbleDictionaryItem;
 
 import org.pmw.tinylog.Logger;
 import org.zephyrsoft.trackworktime.database.DAO;
@@ -16,7 +15,9 @@ import org.zephyrsoft.trackworktime.timer.TimerManager;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /** Builds and sends the current status + recent-task list to the TWT Control watchapp. */
 public final class TwtControlSender {
@@ -51,12 +52,12 @@ public final class TwtControlSender {
             }
             String list = TwtTaskList.encode(items, MAX_TASKS);
 
-            PebbleDictionary dict = new PebbleDictionary();
-            dict.addUint8(TwtControlKeys.ST_TRACKING, (byte) (tracking ? 1 : 0));
-            dict.addString(TwtControlKeys.ST_TASK_NAME, taskName);
-            dict.addInt32(TwtControlKeys.ST_WORKED_MIN, workedMin);
-            dict.addString(TwtControlKeys.TASK_LIST, list);
-            PebbleKit.sendDataToPebble(context, TwtControlKeys.CONTROL_UUID, dict);
+            Map<Integer, PebbleDictionaryItem> dict = new HashMap<>();
+            dict.put(TwtControlKeys.ST_TRACKING, new PebbleDictionaryItem.UInt8(tracking ? 1 : 0));
+            dict.put(TwtControlKeys.ST_TASK_NAME, new PebbleDictionaryItem.Text(taskName));
+            dict.put(TwtControlKeys.ST_WORKED_MIN, new PebbleDictionaryItem.Int32(workedMin));
+            dict.put(TwtControlKeys.TASK_LIST, new PebbleDictionaryItem.Text(list));
+            PebbleSenders.sendAndClose(context, TwtControlKeys.CONTROL_UUID, dict, "TWT Control status/list");
         } catch (Exception e) {
             Logger.warn(e, "failed to send status/list to TWT Control");
         }

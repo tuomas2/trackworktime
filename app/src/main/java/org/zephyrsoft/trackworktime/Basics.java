@@ -61,9 +61,6 @@ import org.zephyrsoft.trackworktime.location.WifiTrackerService;
 import org.zephyrsoft.trackworktime.model.PeriodEnum;
 import org.zephyrsoft.trackworktime.options.Key;
 import org.zephyrsoft.trackworktime.pebble.PebbleStatusPusher;
-import org.zephyrsoft.trackworktime.pebble.TwtControlHandler;
-
-import com.getpebble.android.kit.PebbleKit;
 import org.zephyrsoft.trackworktime.timer.TimeCalculator;
 import org.zephyrsoft.trackworktime.timer.TimerManager;
 import org.zephyrsoft.trackworktime.util.DateTimeUtil;
@@ -128,14 +125,11 @@ public class Basics {
         timeCalculator = new TimeCalculator(dao, timerManager);
         externalNotificationManager = new ExternalNotificationManager(context, preferences);
 
+        // Outbound watchface status pushes on every tracking change. Inbound commands and
+        // app-open pushes are handled by PebbleListenerService (PebbleKit Android 2), declared
+        // in the manifest — no runtime broadcast-receiver registration needed.
         pebbleStatusPusher = new PebbleStatusPusher(context, preferences, timerManager, dao);
         timerManager.addListener(pebbleStatusPusher);
-        PebbleKit.registerPebbleConnectedReceiver(context, new android.content.BroadcastReceiver() {
-            @Override public void onReceive(android.content.Context c, android.content.Intent i) {
-                if (pebbleStatusPusher != null) pebbleStatusPusher.pushStatus();
-            }
-        });
-        PebbleKit.registerReceivedDataHandler(context, new TwtControlHandler());
 
         initTinyLog();
 

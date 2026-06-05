@@ -2,10 +2,12 @@ package org.zephyrsoft.trackworktime.pebble;
 
 import android.content.Context;
 
-import com.getpebble.android.kit.PebbleKit;
-import com.getpebble.android.kit.util.PebbleDictionary;
+import io.rebble.pebblekit2.common.model.PebbleDictionaryItem;
 
 import org.pmw.tinylog.Logger;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /** Serialises a {@link PebbleStatus} and sends it to the TimeStyle watchface. */
 public final class PebbleStatusSender {
@@ -18,15 +20,18 @@ public final class PebbleStatusSender {
 
     public void send(PebbleStatus status) {
         try {
-            PebbleDictionary dict = new PebbleDictionary();
-            dict.addUint8(TwtPebbleKeys.TWT_IS_TRACKING, (byte) (status.isTracking() ? 1 : 0));
-            dict.addInt32(TwtPebbleKeys.TWT_TASK_ID, status.taskId());
-            dict.addString(TwtPebbleKeys.TWT_TASK_NAME, status.taskName());
-            dict.addInt32(TwtPebbleKeys.TWT_WORKED_BEFORE_MIN, status.workedBeforeMin());
+            Map<Integer, PebbleDictionaryItem> dict = new HashMap<>();
+            dict.put(TwtPebbleKeys.TWT_IS_TRACKING,
+                    new PebbleDictionaryItem.UInt8(status.isTracking() ? 1 : 0));
+            dict.put(TwtPebbleKeys.TWT_TASK_ID, new PebbleDictionaryItem.Int32(status.taskId()));
+            dict.put(TwtPebbleKeys.TWT_TASK_NAME, new PebbleDictionaryItem.Text(status.taskName()));
+            dict.put(TwtPebbleKeys.TWT_WORKED_BEFORE_MIN,
+                    new PebbleDictionaryItem.Int32(status.workedBeforeMin()));
             // Epoch seconds sent as int32: the AppMessage field and the watch both use int32,
             // so this silently wraps after 2038-01-19 (Y2038). Accepted for v1.
-            dict.addInt32(TwtPebbleKeys.TWT_SEGMENT_START, (int) status.segmentStartEpoch());
-            PebbleKit.sendDataToPebble(context, TwtPebbleKeys.TIMESTYLE_UUID, dict);
+            dict.put(TwtPebbleKeys.TWT_SEGMENT_START,
+                    new PebbleDictionaryItem.Int32((int) status.segmentStartEpoch()));
+            PebbleSenders.sendAndClose(context, TwtPebbleKeys.TIMESTYLE_UUID, dict, "TWT watchface status");
         } catch (Exception e) {
             Logger.warn(e, "problem while sending TWT status to Pebble");
         }

@@ -92,6 +92,17 @@
             android:enabled="true"
             android:foregroundServiceType="location" />
 
+        <!-- PebbleKit Android 2: the Pebble/Core app binds here to deliver AppMessages from
+             the TWT Control watchapp and TimeStyle watchface (routed by UUID in the service). -->
+        <service
+            android:name=".pebble.PebbleListenerService"
+            android:exported="true"
+            tools:ignore="ExportedService">
+            <intent-filter>
+                <action android:name="io.rebble.pebblekit2.RECEIVE_DATA_FROM_WATCH" />
+            </intent-filter>
+        </service>
+
         <activity
             android:name=".WorkTimeTrackerActivity"
             android:exported="true"
