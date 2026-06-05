@@ -221,7 +221,7 @@
     </string-array>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="nav_header_subtitle">https://zephyrsoft.org/trackworktime</string>
+    <string name="nav_header_subtitle">https://github.com/Sykero-Software/trackworktime</string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="current_value">current value: %s</string>
     <string name="current_value_minutes">current value: %s minutes</string>
