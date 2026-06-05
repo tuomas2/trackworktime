@@ -31,14 +31,13 @@ public final class PebbleListenerService extends BaseJavaPebbleListenerService {
                                      Map<Integer, ? extends PebbleDictionaryItem> data,
                                      String watchId,
                                      Consumer<ReceiveResult> ackCallback) {
-        Logger.info("PebbleListenerService.onMessageReceived uuid={} keys={}",
-                watchappUuid, data.keySet());
         // Always acknowledge so the watch's AppMessage transaction completes.
         ackCallback.accept(ReceiveResult.Ack.INSTANCE);
 
         if (!TwtControlKeys.CONTROL_UUID.equals(watchappUuid)) {
             return;  // the watchface (TimeStyle) talks to the phone via its own PKJS, not us
         }
+        Logger.debug("PebbleListenerService.onMessageReceived keys={}", data.keySet());
         try {
             Integer cmd = intValue(data.get(TwtControlKeys.CMD));
             if (cmd == null) return;
