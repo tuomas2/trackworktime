@@ -14,9 +14,11 @@ public final class TwtPebbleKeys {
 
     private TwtPebbleKeys() {}
 
-    /** TimeStyle watchface UUID (from TimeStylePebble/package.json). */
+    /** TimeStyle TWT watchface UUID (our fork; see TimeStylePebble/package.json).
+     *  Distinct from upstream TimeStyle (4368ffa4-...) so the fork can be published
+     *  without colliding. */
     public static final UUID TIMESTYLE_UUID =
-            UUID.fromString("4368ffa4-f0fb-4823-90be-f754b076bdaa");
+            UUID.fromString("812efd3c-309b-4474-a942-35bcb55a76f2");
 
     public static final int TWT_IS_TRACKING       = 10030;
     public static final int TWT_TASK_ID           = 10031;
