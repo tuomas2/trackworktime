@@ -61,6 +61,7 @@ import org.zephyrsoft.trackworktime.location.WifiTrackerService;
 import org.zephyrsoft.trackworktime.model.PeriodEnum;
 import org.zephyrsoft.trackworktime.options.Key;
 import org.zephyrsoft.trackworktime.pebble.PebbleStatusPusher;
+import org.zephyrsoft.trackworktime.pebble.TwtControlPusher;
 import org.zephyrsoft.trackworktime.timer.TimeCalculator;
 import org.zephyrsoft.trackworktime.timer.TimerManager;
 import org.zephyrsoft.trackworktime.util.DateTimeUtil;
@@ -130,6 +131,9 @@ public class Basics {
         // in the manifest — no runtime broadcast-receiver registration needed.
         pebbleStatusPusher = new PebbleStatusPusher(context, preferences, timerManager, dao);
         timerManager.addListener(pebbleStatusPusher);
+        // Same for the TWT Control watchapp, so its status/list stays live on changes from
+        // any origin (not just its own commands or app-open).
+        timerManager.addListener(new TwtControlPusher(context, preferences, timerManager, dao));
 
         initTinyLog();
 
