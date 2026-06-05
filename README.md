@@ -1,4 +1,10 @@
 # Track Work Time
+
+> **Fork notice:** This is a fork of [mathisdt/trackworktime](https://codeberg.org/mathisdt/trackworktime),
+> maintained by Sykerö Software. It adds a Pebble companion integration (PebbleKit
+> Android 2): start/stop tracking and a task list to/from the watch, plus a status
+> push to the TimeStyle watchface. All credit for the original app goes to the
+> upstream author.
   
 This app can track your work time easily! You can automate time tracking using geo-fencing functions (see below).
 You may also **categorize each recorded interval** by a predefined client/task and a free text.
