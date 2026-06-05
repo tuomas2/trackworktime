@@ -69,6 +69,14 @@ public final class PebbleListenerService extends BaseJavaPebbleListenerService {
                     break;
             }
 
+            if (cmd == TwtControlKeys.CMD_START || cmd == TwtControlKeys.CMD_STOP) {
+                // Refresh the app's main screen if it's open (matches WifiTracker/LocationTracker
+                // behaviour for tracking changes made outside the activity). onMessageReceived
+                // runs off the main thread, so post the (UI-touching) refresh to the main looper.
+                new android.os.Handler(android.os.Looper.getMainLooper()).post(
+                        org.zephyrsoft.trackworktime.WorkTimeTrackerActivity::refreshViewIfShown);
+            }
+
             new TwtControlSender(context, tm, dao).sendStatusAndList();
         } catch (Exception e) {
             Logger.warn(e, "failed to handle TWT Control command");
