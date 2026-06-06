@@ -64,8 +64,7 @@ public class LocationTrackerService extends Service {
         }
         // note: API levels 21 - 25 don't display a notification while "tracking by location" is active
         locationTracker = new LocationTracker((LocationManager) getSystemService(Context.LOCATION_SERVICE), basics
-            .getTimerManager(), basics.getExternalNotificationManager(), (AudioManager) getSystemService(Context.AUDIO_SERVICE),
-            getApplicationContext());
+            .getTimerManager(), basics.getExternalNotificationManager(), (AudioManager) getSystemService(Context.AUDIO_SERVICE));
         // restart if service crashed previously
         basics.safeCheckLocationBasedTracking();
     }

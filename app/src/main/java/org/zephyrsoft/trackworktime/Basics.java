@@ -124,7 +124,7 @@ public class Basics {
 
         timerManager = new TimerManager(dao, preferences, context);
         timeCalculator = new TimeCalculator(dao, timerManager);
-        externalNotificationManager = new ExternalNotificationManager(context, preferences);
+        externalNotificationManager = new ExternalNotificationManager(context);
 
         // Outbound watchface status pushes on every tracking change. Inbound commands and
         // app-open pushes are handled by PebbleListenerService (PebbleKit Android 2), declared

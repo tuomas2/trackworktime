@@ -57,7 +57,6 @@
     <string name="keyShowNavigationButtons">keyShowNavigationButtons</string>
     <string name="keyLastAskedForDocumentTree">keyLastAskedForDocumentTree</string>
     <string name="keyGrantedDocumentTree">keyGrantedDocumentTree</string>
-    <string name="keyPebbleNotification">keyPebbleNotification</string>
     <string name="keyPebbleStatus">keyPebbleStatus</string>
     <string name="keyNeverUpdatePersistentNotification">keyNeverUpdatePersistentNotification</string>
     <string name="keyAutomaticBackupLastTime">keyAutomaticBackupLastTime</string>

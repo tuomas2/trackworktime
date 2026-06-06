@@ -15,7 +15,6 @@
  */
 package org.zephyrsoft.trackworktime.location;
 
-import android.content.Context;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -25,7 +24,6 @@ import android.os.Bundle;
 
 import org.pmw.tinylog.Logger;
 import org.zephyrsoft.trackworktime.Constants;
-import org.zephyrsoft.trackworktime.R;
 import org.zephyrsoft.trackworktime.WorkTimeTrackerActivity;
 import org.zephyrsoft.trackworktime.timer.TimerManager;
 import org.zephyrsoft.trackworktime.util.ExternalNotificationManager;
@@ -51,15 +49,13 @@ public class LocationTracker implements LocationListener {
     private boolean vibrate = false;
 
     private Location previousLocation = null;
-    private Context context;
 
     /**
      * Creates a new location-based tracker. By only creating it, the tracking does not start yet - you have to call
      * {@link #startTrackingByLocation(double, double, double, boolean)} explicitly.
      */
     public LocationTracker(LocationManager locationManager, TimerManager timerManager,
-                           ExternalNotificationManager externalNotificationManager, AudioManager audioManager,
-                           Context context) {
+                           ExternalNotificationManager externalNotificationManager, AudioManager audioManager) {
         if (locationManager == null) {
             throw new IllegalArgumentException("the LocationManager is null");
         }
@@ -76,7 +72,6 @@ public class LocationTracker implements LocationListener {
         this.timerManager = timerManager;
         this.externalNotificationManager = externalNotificationManager;
         this.audioManager = audioManager;
-        this.context = context;
     }
 
     /**
@@ -141,7 +136,6 @@ public class LocationTracker implements LocationListener {
                     if (vibrate && isVibrationAllowed()) {
                         tryVibration();
                     }
-                    tryPebbleNotification(context.getString(R.string.pebbleNotifyStartByLocation));
                     Logger.info("clocked in via location-based tracking");
                 }
             }
@@ -157,7 +151,6 @@ public class LocationTracker implements LocationListener {
                     if (vibrate && isVibrationAllowed()) {
                         tryVibration();
                     }
-                    tryPebbleNotification(context.getString(R.string.pebbleNotifyStopByLocation));
                     Logger.info("clocked out via location-based tracking");
                 }
             }
@@ -173,14 +166,6 @@ public class LocationTracker implements LocationListener {
             externalNotificationManager.vibrate(Constants.VIBRATION_PATTERN);
         } catch (RuntimeException re) {
             Logger.warn("vibration not allowed by permissions");
-        }
-    }
-
-    private void tryPebbleNotification(String message) {
-        try {
-            externalNotificationManager.notifyPebble(message);
-        } catch (Exception e) {
-            Logger.warn("Pebble notification failed");
         }
     }
 

@@ -145,7 +145,6 @@ public class WifiTracker implements WifiScanner.WifiScanListener {
 				if (vibrate && isVibrationAllowed()) {
 					tryVibration();
 				}
-				tryPebbleNotification(context.getString(R.string.pebbleNotifyStopByWifi));
 				Logger.info("clocked out via wifi-based tracking");
 			}
 		} else if ((ssidWasPreviouslyInRange == null || !ssidWasPreviouslyInRange) && ssidIsNowInRange) {
@@ -156,7 +155,6 @@ public class WifiTracker implements WifiScanner.WifiScanListener {
 				if (vibrate && isVibrationAllowed()) {
 					tryVibration();
 				}
-				tryPebbleNotification(context.getString(R.string.pebbleNotifyStartByWifi));
 				Logger.info("clocked in via wifi-based tracking");
 			}
 		}
@@ -214,14 +212,6 @@ public class WifiTracker implements WifiScanner.WifiScanListener {
 			externalNotificationManager.vibrate(Constants.VIBRATION_PATTERN);
 		} catch (RuntimeException re) {
 			Logger.warn("vibration not allowed by permissions");
-		}
-	}
-
-	private void tryPebbleNotification(String message) {
-		try {
-			externalNotificationManager.notifyPebble(message);
-		} catch (Exception e) {
-			Logger.warn("Pebble notification failed");
 		}
 	}
 

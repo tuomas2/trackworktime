@@ -485,7 +485,6 @@ public class WorkTimeTrackerActivity extends AppCompatActivity
 			? null
 			: binding.main.text.getText().toString();
 		timerManager.startTracking(minutesToPredate, selectedTask, description, TimerManager.EventOrigin.MAIN_SCREEN_BUTTON);
-		externalNotificationManager.notifyPebble(getString(R.string.pebbleNotifyStart));
 		refreshView();
 	}
 
@@ -522,7 +521,6 @@ public class WorkTimeTrackerActivity extends AppCompatActivity
 		}
 
 		timerManager.stopTracking(minutesToPredate, TimerManager.EventOrigin.MAIN_SCREEN_BUTTON);
-		externalNotificationManager.notifyPebble(getString(R.string.pebbleNotifyStop));
 		refreshView();
 	}
 

@@ -252,8 +252,6 @@
     <string name="enableFlexiTimeOrItWontWork">Please configure and enable Flexi Time in the options, else this won\'t work.</string>
     <string name="alsoOnNonWorkingDays">also on non-working days</string>
     <string name="targetTime">Target Time</string>
-    <string name="pebbleNotification">Notification on Pebble</string>
-    <string name="pebbleNotificationDescription">notify events on connected Pebble watch</string>
     <string name="pebbleStatus">Show status on Pebble watchface</string>
     <string name="pebbleStatusSummary">Send the current task and today\'s worked time to the TimeStyle watchface</string>
     <string name="wifiBasedTrackingCheckInterval">Wi-Fi check interval</string>
@@ -309,12 +307,6 @@
     <string name="trackingByLocationErrorTitle">Disabled location-based tracking!</string>
     <string name="trackingByLocationErrorSubtitle">(open to see details)</string>
     <string name="trackingByLocationErrorExplanation">Track Work Time disabled the location-based tracking because of missing privileges. You can re-enable it in the options and then grant the required permissions.</string>
-    <string name="pebbleNotifyStart">started tracking</string>
-    <string name="pebbleNotifyStop">stopped tracking</string>
-    <string name="pebbleNotifyStartByLocation">started tracking via location</string>
-    <string name="pebbleNotifyStopByLocation">stopped tracking via location</string>
-    <string name="pebbleNotifyStartByWifi">started tracking via WiFi</string>
-    <string name="pebbleNotifyStopByWifi">stopped tracking via WiFi</string>
     <string name="trackingByWifiErrorText">Disabling the wifi-based tracking because of missing privileges!</string>
     <string name="trackingByWifiErrorTitle">Disabled wifi-based tracking!</string>
     <string name="trackingByWifiErrorSubtitle">(open to see details)</string>
