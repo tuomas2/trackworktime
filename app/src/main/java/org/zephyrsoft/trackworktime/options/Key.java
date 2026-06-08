@@ -76,6 +76,8 @@ public enum Key {
 	FLEXI_TIME_TO_ZERO_ON_EVERY_DAY("keyFlexiTimeToZeroOnEveryDay", DataType.BOOLEAN, NOTIFICATION_ENABLED,
 		R.string.flexiTimeToZeroOnEveryDay),
 	STATUS_ON_PEBBLE("keyPebbleStatus", DataType.BOOLEAN, null, R.string.pebbleStatus),
+	WORK_TIME_TARGET_PER_DAY("keyWorkTimeTargetPerDay", DataType.HOUR_MINUTE, null,
+		R.string.workTimeTargetPerDay),
 
 	WIFI_BASED_TRACKING_ENABLED("keyWifiBasedTrackingEnabled", DataType.BOOLEAN, null, R.string.enableWifiBasedTracking),
 	WIFI_BASED_TRACKING_VIBRATE("keyWifiBasedTrackingVibrate", DataType.BOOLEAN, WIFI_BASED_TRACKING_ENABLED,

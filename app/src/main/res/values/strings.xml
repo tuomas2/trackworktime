@@ -254,6 +254,8 @@
     <string name="targetTime">Target Time</string>
     <string name="pebbleStatus">Show status on Pebble watchface</string>
     <string name="pebbleStatusSummary">Send the current task and today\'s worked time to the TimeStyle watchface</string>
+    <string name="workTimeTargetPerDay">Daily work time target</string>
+    <string name="workTimeTargetPerDayDescription">in hours:minutes per day, e.g. 7:30 — denominator for the watchface progress percentage. If unset, the weekly Flexi target spread across work days is used.</string>
     <string name="wifiBasedTrackingCheckInterval">Wi-Fi check interval</string>
     <string name="wifiBasedTrackingCheckIntervalDescription">search for Wi-Fi networks only in this interval (smaller is more exact, but uses slightly more battery)</string>
     <string name="wifiBasedTrackingCheckIntervalDescriptionExtension">numbers between 1 and 60 are allowed (interpreted as minutes)</string>

@@ -524,6 +524,23 @@ public class TimerManager {
 		}
 	}
 
+	/**
+	 * Daily work-time target (in minutes) used for the watch progress percentage
+	 * (today's worked time / this value). Prefers the explicit per-day target
+	 * ({@link Key#WORK_TIME_TARGET_PER_DAY}, e.g. "7:30") when it is set (&gt; 0); that value is
+	 * used verbatim, NOT divided across work days. When unset, falls back to the weekly Flexi
+	 * target spread across the work days ({@link #getNormalWorkDurationFor(DayOfWeek)}), which is
+	 * 0 on a non-work day so the watch hides the percent/bar.
+	 */
+	public int getDailyWorkTimeTarget(DayOfWeek weekDay) {
+		String targetString = preferences.getString(Key.WORK_TIME_TARGET_PER_DAY.getName(), "0:00");
+		int explicit = parseHoursMinutesString(DateTimeUtil.refineHourMinute(targetString));
+		if (explicit > 0) {
+			return explicit;
+		}
+		return getNormalWorkDurationFor(weekDay);
+	}
+
 	public int countWorkDays() {
 		int ret = 0;
 		for (DayOfWeek day : DayOfWeek.values()) {

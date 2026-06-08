@@ -190,6 +190,10 @@
             android:title="@string/pebbleStatus"
             android:summary="@string/pebbleStatusSummary"
             android:defaultValue="false" />
+        <org.zephyrsoft.trackworktime.options.DurationPreference
+            android:key="@string/keyWorkTimeTargetPerDay"
+            android:title="@string/workTimeTargetPerDay"
+            android:summary="@string/workTimeTargetPerDayDescription" />
         <CheckBoxPreference
             android:key="@string/keyNeverUpdatePersistentNotification"
             android:summary="@string/neverUpdatePersistentNotificationDescription"

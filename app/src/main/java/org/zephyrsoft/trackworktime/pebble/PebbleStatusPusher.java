@@ -69,7 +69,7 @@ public class PebbleStatusPusher implements Updatable {
             int taskWorkedTodayMin = (tracking && perTask.containsKey(taskId)) ? perTask.get(taskId) : 0;
             long segmentStartEpoch = tracking ? latest.getDateTime().toEpochSecond() : 0L;
             long nowEpoch = System.currentTimeMillis() / 1000L;
-            int dailyTargetMin = timerManager.getNormalWorkDurationFor(LocalDate.now().getDayOfWeek());
+            int dailyTargetMin = timerManager.getDailyWorkTimeTarget(LocalDate.now().getDayOfWeek());
 
             PebbleStatus status = PebbleStatus.of(
                     tracking, taskId, taskName, totalWorkedTodayMin, taskWorkedTodayMin,

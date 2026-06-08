@@ -16,13 +16,20 @@
 package org.zephyrsoft.trackworktime.timer;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import android.content.SharedPreferences;
 
 import org.junit.Test;
 import org.zephyrsoft.trackworktime.database.DAO;
 import org.zephyrsoft.trackworktime.model.TypeEnum;
+import org.zephyrsoft.trackworktime.options.Key;
 import org.zephyrsoft.trackworktime.util.Updatable;
 
+import java.time.DayOfWeek;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 
@@ -48,5 +55,35 @@ public class TimerManagerTest {
         timerManager.createEvent(base.plusDays(1), 1, TypeEnum.CLOCK_IN, "", TimerManager.EventOrigin.RESTORE_BACKUP);
 
         assertThat(notifyCount[0]).isEqualTo(0);
+    }
+
+    /**
+     * The watch progress percentage divides today's worked time by a daily work-time target.
+     * When the user sets an explicit per-day target (Key.WORK_TIME_TARGET_PER_DAY), that value
+     * is used verbatim (NOT divided across work days like the weekly Flexi target).
+     */
+    @Test
+    public void dailyWorkTimeTarget_usesExplicitPerDaySettingWhenSet() {
+        SharedPreferences prefs = mock(SharedPreferences.class);
+        when(prefs.getString(eq(Key.WORK_TIME_TARGET_PER_DAY.getName()), anyString()))
+                .thenReturn("7:30");
+        TimerManager tm = new TimerManager(mock(DAO.class), prefs, null);
+
+        assertThat(tm.getDailyWorkTimeTarget(DayOfWeek.MONDAY)).isEqualTo(450);
+    }
+
+    /**
+     * When no explicit per-day target is set, fall back to the weekly-Flexi-derived value
+     * (getNormalWorkDurationFor) — which is 0 on a non-work day, so the watch hides the percent.
+     */
+    @Test
+    public void dailyWorkTimeTarget_fallsBackToWeeklyDerivedWhenUnset() {
+        SharedPreferences prefs = mock(SharedPreferences.class);
+        when(prefs.getString(eq(Key.WORK_TIME_TARGET_PER_DAY.getName()), anyString()))
+                .thenReturn("0:00");
+        // all FLEXI_TIME_DAY_* default to false -> isWorkDay false -> getNormalWorkDurationFor == 0
+        TimerManager tm = new TimerManager(mock(DAO.class), prefs, null);
+
+        assertThat(tm.getDailyWorkTimeTarget(DayOfWeek.SUNDAY)).isEqualTo(0);
     }
 }
