@@ -850,6 +850,11 @@ public class DAO {
                 // ignore rest of current row
             }
         }
+
+        // createEvent() suppresses per-event listener notifications for RESTORE_BACKUP, so notify
+        // once now that all events are restored (refreshes the UI and pushes a single update to the
+        // watch instead of one per restored event).
+        timerManager.notifyListeners();
 	}
 
 	@VisibleForTesting

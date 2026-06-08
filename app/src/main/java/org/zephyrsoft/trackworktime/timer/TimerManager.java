@@ -629,9 +629,10 @@ public class TimerManager {
 
 		if (source != EventOrigin.RESTORE_BACKUP) {
 			Basics.get(context).safeCheckExternalControls();
-		}
-		notifyListeners();
-		if (source != EventOrigin.RESTORE_BACKUP) {
+			// During a restore, events are inserted one-by-one; notifying per event would make the
+			// registered listeners (Pebble status/control pushers, UI) fire thousands of times and
+			// flood the watch. The caller (restoreEventsFromReader) notifies once when finished.
+			notifyListeners();
 			BroadcastUtil.sendEventBroadcast(inserted, context, BroadcastUtil.Action.CREATED, source);
 		}
 	}
