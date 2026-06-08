@@ -5,10 +5,12 @@ import java.util.UUID;
 /**
  * AppMessage integer keys, shared with the TimeStyle watchface.
  *
- * IMPORTANT: these integers MUST match build/js/message_keys.json in the TimeStyle project
- * after the TWT keys are appended to package.json. They are now PINNED to the real values
- * produced by the watchface build (no longer placeholders); update them only if the watchface's
- * message_keys.json reassigns the TWT keys.
+ * IMPORTANT: these integers MUST match the watchface's auto-assigned AppMessage key IDs
+ * (ID = 10000 + position in TimeStylePebble/package.json messageKeys; see the SDK's
+ * process_message_keys.py). A drift here is silent and nasty — the watch reads one field as
+ * another (it once read dailyTargetMin as taskWorkedBeforeMin). The monorepo script
+ * scripts/check-pebble-message-keys.py recomputes the IDs and fails CI/pre-commit on any
+ * mismatch; run it after touching either side. Only ever APPEND new messageKeys at the end.
  */
 public final class TwtPebbleKeys {
 
@@ -25,12 +27,10 @@ public final class TwtPebbleKeys {
     public static final int TWT_TASK_NAME         = 10032;
     public static final int TWT_WORKED_BEFORE_MIN = 10033;
     public static final int TWT_SEGMENT_START     = 10034;
-    // Appended at the END of TimeStyle package.json messageKeys (a later watch task);
-    // value verified against build/js/message_keys.json. Appended (not inserted) so the
-    // MIDI/Setting/Elec keys keep their pinned integers.
-    public static final int TWT_TASK_WORKED_BEFORE_MIN = 10042;
-    // Appended at the END of TimeStyle package.json messageKeys (Task 1); value verified
-    // against build/js/message_keys.json. The DAILY work-time target in minutes
-    // (TimerManager.getNormalWorkDurationFor); 0 when no target is set.
-    public static final int TWT_DAILY_TARGET_MIN = 10043;
+    // The two keys below sit at the END of package.json messageKeys, after the
+    // MIDI/Setting/Elec keys, so their positions (and IDs) are 10043 and 10044.
+    public static final int TWT_TASK_WORKED_BEFORE_MIN = 10043;
+    // The DAILY work-time target in minutes (TimerManager.getDailyWorkTimeTarget);
+    // 0 when no target is set.
+    public static final int TWT_DAILY_TARGET_MIN = 10044;
 }
