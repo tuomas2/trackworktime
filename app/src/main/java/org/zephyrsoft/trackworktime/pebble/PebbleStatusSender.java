@@ -29,6 +29,8 @@ public final class PebbleStatusSender {
                     new PebbleDictionaryItem.Int32(status.workedBeforeMin()));
             dict.put(TwtPebbleKeys.TWT_TASK_WORKED_BEFORE_MIN,
                     new PebbleDictionaryItem.Int32(status.taskWorkedBeforeMin()));
+            dict.put(TwtPebbleKeys.TWT_DAILY_TARGET_MIN,
+                    new PebbleDictionaryItem.Int32(status.dailyTargetMin()));
             // Epoch seconds sent as int32: the AppMessage field and the watch both use int32,
             // so this silently wraps after 2038-01-19 (Y2038). Accepted for v1.
             dict.put(TwtPebbleKeys.TWT_SEGMENT_START,

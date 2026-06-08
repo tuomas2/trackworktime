@@ -29,4 +29,8 @@ public final class TwtPebbleKeys {
     // value verified against build/js/message_keys.json. Appended (not inserted) so the
     // MIDI/Setting/Elec keys keep their pinned integers.
     public static final int TWT_TASK_WORKED_BEFORE_MIN = 10042;
+    // Appended at the END of TimeStyle package.json messageKeys (Task 1); value verified
+    // against build/js/message_keys.json. The DAILY work-time target in minutes
+    // (TimerManager.getNormalWorkDurationFor); 0 when no target is set.
+    public static final int TWT_DAILY_TARGET_MIN = 10043;
 }
