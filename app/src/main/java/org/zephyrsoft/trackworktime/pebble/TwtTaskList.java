@@ -2,7 +2,7 @@ package org.zephyrsoft.trackworktime.pebble;
 
 import java.util.List;
 
-/** Encodes recent tasks into the control app's TASK_LIST wire format: "id\tname\tmin". */
+/** Encodes recent tasks into the control app's TASK_LIST wire format: "id\tname\tmin\nid\tname\tmin". */
 public final class TwtTaskList {
 
     private TwtTaskList() {}

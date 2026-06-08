@@ -10,7 +10,6 @@ import org.zephyrsoft.trackworktime.model.PeriodEnum;
 import org.zephyrsoft.trackworktime.model.Task;
 import org.zephyrsoft.trackworktime.model.TypeEnum;
 import org.zephyrsoft.trackworktime.options.Key;
-import org.zephyrsoft.trackworktime.timer.TimeCalculator;
 import org.zephyrsoft.trackworktime.timer.TimerManager;
 import org.zephyrsoft.trackworktime.util.Updatable;
 
@@ -66,7 +65,7 @@ public class PebbleStatusPusher implements Updatable {
             }
 
             int totalWorkedTodayMin = (int) timerManager.calculateTimeSum(LocalDate.now(), PeriodEnum.DAY);
-            Map<Integer, Integer> perTask = PebbleTaskTimes.todayByTaskId(dao, new TimeCalculator(dao, timerManager));
+            Map<Integer, Integer> perTask = PebbleTaskTimes.todayByTaskId(dao, timerManager);
             int taskWorkedTodayMin = (tracking && perTask.containsKey(taskId)) ? perTask.get(taskId) : 0;
             long segmentStartEpoch = tracking ? latest.getDateTime().toEpochSecond() : 0L;
             long nowEpoch = System.currentTimeMillis() / 1000L;

@@ -10,7 +10,6 @@ import org.zephyrsoft.trackworktime.model.Event;
 import org.zephyrsoft.trackworktime.model.Task;
 import org.zephyrsoft.trackworktime.model.TypeEnum;
 import org.zephyrsoft.trackworktime.model.PeriodEnum;
-import org.zephyrsoft.trackworktime.timer.TimeCalculator;
 import org.zephyrsoft.trackworktime.timer.TimerManager;
 
 import java.time.LocalDate;
@@ -48,7 +47,7 @@ public final class TwtControlSender {
             int workedMin = (int) timerManager.calculateTimeSum(LocalDate.now(), PeriodEnum.DAY);
 
             Map<Integer, Integer> perTask =
-                    PebbleTaskTimes.todayByTaskId(dao, new TimeCalculator(dao, timerManager));
+                    PebbleTaskTimes.todayByTaskId(dao, timerManager);
             List<TwtTaskList.Item> items = new ArrayList<>();
             for (Task t : dao.getActiveTasksSortedByLastUsed()) {
                 int min = perTask.getOrDefault(t.getId(), 0);
