@@ -10,19 +10,22 @@ public final class PebbleStatus {
     private final int taskId;
     private final String taskName;
     private final int workedBeforeMin;
+    private final int taskWorkedBeforeMin;
     private final long segmentStartEpoch;
 
     private PebbleStatus(boolean tracking, int taskId, String taskName,
-                         int workedBeforeMin, long segmentStartEpoch) {
+                         int workedBeforeMin, int taskWorkedBeforeMin, long segmentStartEpoch) {
         this.tracking = tracking;
         this.taskId = taskId;
         this.taskName = taskName;
         this.workedBeforeMin = workedBeforeMin;
+        this.taskWorkedBeforeMin = taskWorkedBeforeMin;
         this.segmentStartEpoch = segmentStartEpoch;
     }
 
     public static PebbleStatus of(boolean tracking, int taskId, String taskName,
-                                  int totalWorkedTodayMin, long segmentStartEpoch, long nowEpoch) {
+                                  int totalWorkedTodayMin, int taskWorkedTodayMin,
+                                  long segmentStartEpoch, long nowEpoch) {
         String name = taskName == null ? "" : taskName;
         if (name.length() > MAX_TASK_NAME_LEN) {
             name = name.substring(0, MAX_TASK_NAME_LEN);
@@ -30,9 +33,10 @@ public final class PebbleStatus {
         if (tracking) {
             int runningMin = (int) Math.max(0, (nowEpoch - segmentStartEpoch) / 60);
             int workedBefore = Math.max(0, totalWorkedTodayMin - runningMin);
-            return new PebbleStatus(true, taskId, name, workedBefore, segmentStartEpoch);
+            int taskWorkedBefore = Math.max(0, taskWorkedTodayMin - runningMin);
+            return new PebbleStatus(true, taskId, name, workedBefore, taskWorkedBefore, segmentStartEpoch);
         } else {
-            return new PebbleStatus(false, taskId, name, Math.max(0, totalWorkedTodayMin), 0L);
+            return new PebbleStatus(false, taskId, name, Math.max(0, totalWorkedTodayMin), 0, 0L);
         }
     }
 
@@ -40,5 +44,6 @@ public final class PebbleStatus {
     public int taskId() { return taskId; }
     public String taskName() { return taskName; }
     public int workedBeforeMin() { return workedBeforeMin; }
+    public int taskWorkedBeforeMin() { return taskWorkedBeforeMin; }
     public long segmentStartEpoch() { return segmentStartEpoch; }
 }
