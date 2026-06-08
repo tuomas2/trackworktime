@@ -25,4 +25,8 @@ public final class TwtPebbleKeys {
     public static final int TWT_TASK_NAME         = 10032;
     public static final int TWT_WORKED_BEFORE_MIN = 10033;
     public static final int TWT_SEGMENT_START     = 10034;
+    // Appended at the END of TimeStyle package.json messageKeys (a later watch task);
+    // value verified against build/js/message_keys.json. Appended (not inserted) so the
+    // MIDI/Setting/Elec keys keep their pinned integers.
+    public static final int TWT_TASK_WORKED_BEFORE_MIN = 10042;
 }
