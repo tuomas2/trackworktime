@@ -12,20 +12,23 @@ public final class PebbleStatus {
     private final int workedBeforeMin;
     private final int taskWorkedBeforeMin;
     private final long segmentStartEpoch;
+    private final int dailyTargetMin;
 
     private PebbleStatus(boolean tracking, int taskId, String taskName,
-                         int workedBeforeMin, int taskWorkedBeforeMin, long segmentStartEpoch) {
+                         int workedBeforeMin, int taskWorkedBeforeMin, long segmentStartEpoch,
+                         int dailyTargetMin) {
         this.tracking = tracking;
         this.taskId = taskId;
         this.taskName = taskName;
         this.workedBeforeMin = workedBeforeMin;
         this.taskWorkedBeforeMin = taskWorkedBeforeMin;
         this.segmentStartEpoch = segmentStartEpoch;
+        this.dailyTargetMin = dailyTargetMin;
     }
 
     public static PebbleStatus of(boolean tracking, int taskId, String taskName,
                                   int totalWorkedTodayMin, int taskWorkedTodayMin,
-                                  long segmentStartEpoch, long nowEpoch) {
+                                  long segmentStartEpoch, long nowEpoch, int dailyTargetMin) {
         String name = taskName == null ? "" : taskName;
         if (name.length() > MAX_TASK_NAME_LEN) {
             name = name.substring(0, MAX_TASK_NAME_LEN);
@@ -34,9 +37,11 @@ public final class PebbleStatus {
             int runningMin = (int) Math.max(0, (nowEpoch - segmentStartEpoch) / 60);
             int workedBefore = Math.max(0, totalWorkedTodayMin - runningMin);
             int taskWorkedBefore = Math.max(0, taskWorkedTodayMin - runningMin);
-            return new PebbleStatus(true, taskId, name, workedBefore, taskWorkedBefore, segmentStartEpoch);
+            return new PebbleStatus(true, taskId, name, workedBefore, taskWorkedBefore,
+                    segmentStartEpoch, dailyTargetMin);
         } else {
-            return new PebbleStatus(false, taskId, name, Math.max(0, totalWorkedTodayMin), 0, 0L);
+            return new PebbleStatus(false, taskId, name, Math.max(0, totalWorkedTodayMin), 0, 0L,
+                    dailyTargetMin);
         }
     }
 
@@ -46,4 +51,5 @@ public final class PebbleStatus {
     public int workedBeforeMin() { return workedBeforeMin; }
     public int taskWorkedBeforeMin() { return taskWorkedBeforeMin; }
     public long segmentStartEpoch() { return segmentStartEpoch; }
+    public int dailyTargetMin() { return dailyTargetMin; }
 }
