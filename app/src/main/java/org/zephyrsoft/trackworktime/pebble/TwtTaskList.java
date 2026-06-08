@@ -24,6 +24,9 @@ public final class TwtTaskList {
         for (int i = 0; i < n; i++) {
             Item it = items.get(i);
             String name = (it.name == null ? "" : it.name).replace('\t', ' ').replace('\n', ' ');
+            if (name.length() > PebbleStatus.MAX_TASK_NAME_LEN) {
+                name = name.substring(0, PebbleStatus.MAX_TASK_NAME_LEN);
+            }
             if (i > 0) sb.append('\n');
             sb.append(it.id).append('\t').append(name).append('\t').append(it.minutes);
         }

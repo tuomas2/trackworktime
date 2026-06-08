@@ -36,4 +36,12 @@ public class TwtTaskListTest {
     public void emptyListIsEmptyString() {
         assertThat(TwtTaskList.encode(List.of(), 7)).isEmpty();
     }
+
+    @Test
+    public void truncatesLongNamesTo32Chars() {
+        String longName = "0123456789012345678901234567890123456789"; // 40 chars
+        String s = TwtTaskList.encode(
+                List.of(new TwtTaskList.Item(3, longName, 12)), 7);
+        assertThat(s).isEqualTo("3\t01234567890123456789012345678901\t12"); // 32-char name
+    }
 }
