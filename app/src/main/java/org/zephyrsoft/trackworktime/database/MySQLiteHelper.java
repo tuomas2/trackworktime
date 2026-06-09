@@ -29,6 +29,7 @@ import org.pmw.tinylog.Logger;
  * 1: used only in development.
  * 2: initial layout, since 0.5.0.
  * 3: added column "default" in task table, since 0.5.12.
+ * 6: added column "budget_minutes" in task table.
  */
 @SuppressWarnings("SyntaxError")
 public class MySQLiteHelper extends SQLiteOpenHelper {
@@ -45,6 +46,8 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
 	public static final String TASK_ORDERING = "ordering";
 	/** name of the default attribute of the task table */
 	public static final String TASK_DEFAULT = "isdefault";
+	/** name of the budget attribute of the task table - total-time budget in minutes, NULL=no budget */
+	public static final String TASK_BUDGET = "budget_minutes";
 
 	/** name of the week table, no longer used */
 	public static final String WEEK = "week";
@@ -90,7 +93,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
 
 
 	static final String DATABASE_NAME = "trackworktime.db";
-	private static final int DATABASE_VERSION = 5;
+	private static final int DATABASE_VERSION = 6;
 
 	private static final String DATABASE_CREATE_TASK = "create table " + TASK + " (" + TASK_ID
 		+ " integer primary key autoincrement, " + TASK_NAME + " text not null, " + TASK_ACTIVE + " integer not null, "
@@ -119,6 +122,9 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
 	private static final String DATABASE_ALTER_WEEK_3_TO_4 = "alter table " + WEEK
 		+ " add column flexi integer null;";
 
+	private static final String DATABASE_ALTER_TASK_5_TO_6 = "alter table " + TASK
+		+ " add column " + TASK_BUDGET + " integer null default null;";
+
 	/**
 	 * Constructor
 	 */
@@ -130,6 +136,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
 	public void onCreate(SQLiteDatabase database) {
 		dbSetup(database);
 		dbUpgradeFrom2to3(database);
+		dbUpgradeFrom5to6(database);
 	}
 
 	@Override
@@ -155,6 +162,10 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
 			database.execSQL(DATABASE_CREATE_TARGET);
 			database.execSQL(DATABASE_CREATE_CACHE);
 			dbUpgradeFrom4to5(database);
+			currentVersion++;
+		}
+		if (currentVersion == 5) {
+			dbUpgradeFrom5to6(database);
 			currentVersion++;
 		}
 
@@ -196,5 +207,9 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
 		database.execSQL(DATABASE_CREATE_EVENT);
 
 		// event migration needs user interaction and will start on next app usage
+	}
+
+	private void dbUpgradeFrom5to6(SQLiteDatabase database) {
+		database.execSQL(DATABASE_ALTER_TASK_5_TO_6);
 	}
 }
