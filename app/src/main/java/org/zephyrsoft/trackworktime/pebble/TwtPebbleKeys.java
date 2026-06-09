@@ -33,4 +33,9 @@ public final class TwtPebbleKeys {
     // The DAILY work-time target in minutes (TimerManager.getDailyWorkTimeTarget);
     // 0 when no target is set.
     public static final int TWT_DAILY_TARGET_MIN = 10044;
+    /** Budget (minutes) of the CURRENT task; 0 when no budget / not tracking. */
+    public static final int TWT_TASK_BUDGET_MIN = 10045;
+    /** All-time worked minutes on the CURRENT task, EXCLUDING the running segment
+     *  (the watch adds the live segment itself, like TWT_TASK_WORKED_BEFORE_MIN). */
+    public static final int TWT_TASK_TOTAL_BEFORE_MIN = 10046;
 }
