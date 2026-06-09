@@ -30,6 +30,8 @@ public class Task extends Base implements Comparable<Task> {
 	private Integer active = null;
 	private Integer ordering = null;
 	private Integer isDefault = null;
+	/** total-time budget in minutes; {@code null} means no budget. */
+	private Integer budgetMinutes = null;
 
 	public Task() {
 		// do nothing
@@ -81,6 +83,14 @@ public class Task extends Base implements Comparable<Task> {
 
 	public void setIsDefault(Integer isDefault) {
 		this.isDefault = isDefault;
+	}
+
+	public Integer getBudgetMinutes() {
+		return budgetMinutes;
+	}
+
+	public void setBudgetMinutes(Integer budgetMinutes) {
+		this.budgetMinutes = budgetMinutes;
 	}
 
 	@Override
