@@ -318,6 +318,10 @@ public class TaskListActivity extends AppCompatActivity {
 						updatedTask.getBudgetMinutes());
 					tasks.remove(taskPosition);
 					tasks.add(taskPosition, updatedTask);
+					// Refresh the all-time map so a newly budgeted task shows its real total/percent
+					// immediately (it would otherwise read 0 if no task had a budget when the screen
+					// opened). updateTask() bumped the data-version, so this recomputes once.
+					allTimeByTask = PebbleTaskTimes.allTimeByTaskId(dao, timerManager);
 					tasksAdapter.notifyDataSetChanged();
 					refreshTasksOnParent();
 				});
