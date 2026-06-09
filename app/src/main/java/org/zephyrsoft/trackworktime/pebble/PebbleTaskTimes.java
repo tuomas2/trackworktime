@@ -50,4 +50,56 @@ public final class PebbleTaskTimes {
         }
         return ret;
     }
+
+    // Memoized result keyed on DAO.getDataVersion(): a repeated call with no intervening DB
+    // change returns the cached map without rescanning. The watchface pusher always sees a fresh
+    // result (the event that triggers it bumped the version); bare refreshes between events reuse
+    // the snapshot. Synchronized because pushes can run from different threads.
+    private static final Object ALL_TIME_LOCK = new Object();
+    private static long allTimeCacheVersion = -1L;
+    private static Map<Integer, Integer> allTimeCache = null;
+
+    /**
+     * Minutes worked over ALL recorded history per task id — gross (same basis as
+     * {@link #todayByTaskId}), including the running segment for the active task (period end is
+     * "now"). Used for per-task budget percentages. Memoized (see above) and only ever called by
+     * callers that have already confirmed a budget is in play, so the unbudgeted path never pays
+     * for the full scan.
+     */
+    public static Map<Integer, Integer> allTimeByTaskId(DAO dao, TimerManager timerManager) {
+        long version = dao.getDataVersion();
+        synchronized (ALL_TIME_LOCK) {
+            if (allTimeCache != null && allTimeCacheVersion == version) {
+                return allTimeCache;
+            }
+        }
+        Map<Integer, Integer> immutable =
+                java.util.Collections.unmodifiableMap(computeAllTimeByTaskId(dao, timerManager));
+        synchronized (ALL_TIME_LOCK) {
+            allTimeCache = immutable;
+            allTimeCacheVersion = version;
+        }
+        return immutable;
+    }
+
+    private static Map<Integer, Integer> computeAllTimeByTaskId(DAO dao, TimerManager timerManager) {
+        Map<Integer, Integer> ret = new HashMap<>();
+        List<Event> events = dao.getAllEvents();
+        if (events.isEmpty()) {
+            return ret;
+        }
+        truncateEventsToMinute(events);
+        // events come back ordered by time ascending, so the first is the earliest.
+        OffsetDateTime begin = events.get(0).getDateTime();
+        OffsetDateTime end = OffsetDateTime.now();
+        TimeCalculator timeCalculator = new TimeCalculator(dao, timerManager);
+        Map<Task, TimeSum> sums = timeCalculator.calculateSums(begin, end, events);
+        for (Map.Entry<Task, TimeSum> e : sums.entrySet()) {
+            Task task = e.getKey();
+            if (task != null && task.getId() != null) {
+                ret.put(task.getId(), e.getValue().getAsMinutes());
+            }
+        }
+        return ret;
+    }
 }

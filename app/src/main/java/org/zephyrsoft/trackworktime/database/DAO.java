@@ -90,6 +90,7 @@ import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 
 /**
@@ -109,6 +110,8 @@ public class DAO {
 	private final Context context;
 	private final WorkTimeTrackerBackupManager backupManager;
 	private final Basics basics;
+	/** Monotonic counter bumped on every data mutation; used to invalidate derived caches. */
+	private final AtomicLong dataVersion = new AtomicLong(0);
 
 	private static final Pattern RESTORE_PATTERN = Pattern.compile(";");
 
@@ -687,10 +690,16 @@ public class DAO {
 		return dbFile.lastModified();
 	}
 
+	/** Returns the current data version; changes whenever any DB mutation happens. */
+	public long getDataVersion() {
+		return dataVersion.get();
+	}
+
 	/**
 	 * Called internally by the data base methods where data is changed.
 	 */
 	private void dataChanged() {
+		dataVersion.incrementAndGet();
 		backupManager.dataChanged();
 	}
 
