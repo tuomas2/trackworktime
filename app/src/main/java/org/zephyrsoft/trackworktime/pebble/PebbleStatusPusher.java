@@ -73,7 +73,7 @@ public class PebbleStatusPusher implements Updatable {
 
             PebbleStatus status = PebbleStatus.of(
                     tracking, taskId, taskName, totalWorkedTodayMin, taskWorkedTodayMin,
-                    segmentStartEpoch, nowEpoch, dailyTargetMin);
+                    segmentStartEpoch, nowEpoch, dailyTargetMin, 0, 0);
             sender.send(status);
         } catch (Exception e) {
             Logger.warn(e, "failed to push TWT status to Pebble");
