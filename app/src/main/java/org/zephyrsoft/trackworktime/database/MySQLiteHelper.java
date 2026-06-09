@@ -29,6 +29,8 @@ import org.pmw.tinylog.Logger;
  * 1: used only in development.
  * 2: initial layout, since 0.5.0.
  * 3: added column "default" in task table, since 0.5.12.
+ * 4: renamed event table to v2, added target and cache tables.
+ * 5: (internal migration of the v2 event table).
  * 6: added column "budget_minutes" in task table.
  */
 @SuppressWarnings("SyntaxError")
