@@ -36,6 +36,7 @@ import static org.zephyrsoft.trackworktime.database.MySQLiteHelper.TARGET_VALUE;
 import static org.zephyrsoft.trackworktime.database.MySQLiteHelper.TASK;
 import static org.zephyrsoft.trackworktime.database.MySQLiteHelper.TASK_ACTIVE;
 import static org.zephyrsoft.trackworktime.database.MySQLiteHelper.TASK_DEFAULT;
+import static org.zephyrsoft.trackworktime.database.MySQLiteHelper.TASK_BUDGET;
 import static org.zephyrsoft.trackworktime.database.MySQLiteHelper.TASK_ID;
 import static org.zephyrsoft.trackworktime.database.MySQLiteHelper.TASK_NAME;
 import static org.zephyrsoft.trackworktime.database.MySQLiteHelper.TASK_ORDERING;
@@ -140,7 +141,7 @@ public class DAO {
 
 	// =======================================================
 
-	private static final String[] TASK_FIELDS = { TASK_ID, TASK_NAME, TASK_ACTIVE, TASK_ORDERING, TASK_DEFAULT };
+	private static final String[] TASK_FIELDS = { TASK_ID, TASK_NAME, TASK_ACTIVE, TASK_ORDERING, TASK_DEFAULT, TASK_BUDGET };
 
 	private Task cursorToTask(Cursor cursor) {
 		Task task = new Task();
@@ -149,6 +150,7 @@ public class DAO {
 		task.setActive(cursor.getInt(2));
 		task.setOrdering(cursor.getInt(3));
 		task.setIsDefault(cursor.getInt(4));
+		task.setBudgetMinutes(cursor.isNull(5) ? null : cursor.getInt(5));
 		return task;
 	}
 
@@ -158,6 +160,7 @@ public class DAO {
 		ret.put(TASK_ACTIVE, task.getActive());
 		ret.put(TASK_ORDERING, task.getOrdering());
 		ret.put(TASK_DEFAULT, task.getIsDefault());
+		ret.put(TASK_BUDGET, task.getBudgetMinutes());
 		return ret;
 	}
 
@@ -207,7 +210,7 @@ public class DAO {
 		List<Task> ret = new ArrayList<>();
 
 		String query = "SELECT t." + TASK_ID + ", t." + TASK_NAME + ", t." + TASK_ACTIVE
-			+ ", t." + TASK_ORDERING + ", t." + TASK_DEFAULT
+			+ ", t." + TASK_ORDERING + ", t." + TASK_DEFAULT + ", t." + TASK_BUDGET
 			+ " FROM " + TASK + " t"
 			+ " LEFT JOIN " + EVENT + " e ON t." + TASK_ID + " = e." + EVENT_TASK
 			+ " WHERE t." + TASK_ACTIVE + " != 0"
@@ -245,7 +248,7 @@ public class DAO {
 	public synchronized Task getMostRecentlyUsedTask() {
 		open();
 		String query = "SELECT t." + TASK_ID + ", t." + TASK_NAME + ", t." + TASK_ACTIVE
-			+ ", t." + TASK_ORDERING + ", t." + TASK_DEFAULT
+			+ ", t." + TASK_ORDERING + ", t." + TASK_DEFAULT + ", t." + TASK_BUDGET
 			+ " FROM " + TASK + " t"
 			+ " JOIN " + EVENT + " e ON t." + TASK_ID + " = e." + EVENT_TASK
 			+ " WHERE t." + TASK_ACTIVE + " != 0"
