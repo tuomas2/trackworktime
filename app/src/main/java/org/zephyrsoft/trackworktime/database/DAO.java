@@ -646,7 +646,8 @@ public class DAO {
 			+ ", " + MySQLiteHelper.TASK_NAME
 			+ ", " + MySQLiteHelper.TASK_ACTIVE
 			+ ", " + MySQLiteHelper.TASK_ORDERING
-			+ ", " + MySQLiteHelper.TASK_DEFAULT;
+			+ ", " + MySQLiteHelper.TASK_DEFAULT
+			+ ", " + MySQLiteHelper.TASK_BUDGET;
 
 		// this is a FULL OUTER JOIN.
 		// see http://stackoverflow.com/questions/1923259/full-outer-join-with-sqlite
@@ -713,6 +714,7 @@ public class DAO {
 		final int taskActiveCol = cur.getColumnIndex(MySQLiteHelper.TASK_ACTIVE);
 		final int taskOrderingCol = cur.getColumnIndex(MySQLiteHelper.TASK_ORDERING);
 		final int taskDefaultCol = cur.getColumnIndex(MySQLiteHelper.TASK_DEFAULT);
+		final int taskBudgetCol = cur.getColumnIndex(MySQLiteHelper.TASK_BUDGET);
 
 		writer.write(
 			MySQLiteHelper.EVENT_TYPE
@@ -724,6 +726,7 @@ public class DAO {
 				+ ";" + MySQLiteHelper.TASK_ACTIVE
 				+ ";" + MySQLiteHelper.TASK_ORDERING
 				+ ";" + MySQLiteHelper.TASK_DEFAULT
+				+ ";" + MySQLiteHelper.TASK_BUDGET
 				+ eol);
 
 		final StringBuilder buf = new StringBuilder();
@@ -760,9 +763,11 @@ public class DAO {
 				buf.append(";");
 				buf.append(cur.getInt(taskDefaultCol));
 				buf.append(";");
+				buf.append(cur.isNull(taskBudgetCol) ? "" : String.valueOf(cur.getInt(taskBudgetCol)));
+				buf.append(";");
 			} else {
 				// this is an event that has no task (TypeEnum.CLOCK_OUT)
-				buf.append(";;;;;");
+				buf.append(";;;;;;");
 			}
 			buf.append(eol);
 			writer.write(buf.toString());
@@ -781,6 +786,7 @@ public class DAO {
 	private static final int INDEX_TASK_ACTIVE = 6;
 	private static final int INDEX_TASK_ORDERING = 7;
 	private static final int INDEX_TASK_DEFAULT = 8;
+	private static final int INDEX_TASK_BUDGET = 9;
 
 	/** ONLY FOR PARSING! reads new and old backup timestamp format */
 	private static final DateTimeFormatter BACKUP_DATETIME_PARSER = new DateTimeFormatterBuilder()
@@ -826,6 +832,9 @@ public class DAO {
                                 Integer.parseInt(columns[INDEX_TASK_ORDERING]),
                                 Integer.parseInt(columns[INDEX_TASK_DEFAULT])
                         );
+                        if (columns.length > INDEX_TASK_BUDGET && columns[INDEX_TASK_BUDGET].length() > 0) {
+                            task.setBudgetMinutes(Integer.parseInt(columns[INDEX_TASK_BUDGET]));
+                        }
                         final ContentValues args = taskToContentValues(task);
                         args.put(MySQLiteHelper.TASK_ID, taskId);
                         db.insert(TASK, null, args);
