@@ -32,6 +32,10 @@ import org.pmw.tinylog.Logger;
 import org.zephyrsoft.trackworktime.database.DAO;
 import org.zephyrsoft.trackworktime.databinding.TasksActivityBinding;
 import org.zephyrsoft.trackworktime.model.Task;
+import org.zephyrsoft.trackworktime.pebble.PebbleTaskTimes;
+import org.zephyrsoft.trackworktime.pebble.TaskBudget;
+import org.zephyrsoft.trackworktime.timer.TimerManager;
+import org.zephyrsoft.trackworktime.util.DateTimeUtil;
 import org.zephyrsoft.trackworktime.util.FlexibleArrayAdapter;
 import org.zephyrsoft.trackworktime.util.SeparatorIdentificationMethod;
 import org.zephyrsoft.trackworktime.util.ThemeUtil;
@@ -49,6 +53,7 @@ public class TaskListActivity extends AppCompatActivity {
 	private static final int TOGGLE_DEFAULT = 2;
 	private static final int TOGGLE_ACTIVATION_STATE_OF_TASK = 3;
 	private static final int DELETE_TASK = 4;
+	private static final int SET_BUDGET = 5;
 
 	private DAO dao = null;
 
@@ -57,6 +62,10 @@ public class TaskListActivity extends AppCompatActivity {
 	private WorkTimeTrackerActivity parentActivity = null;
 
 	private FlexibleArrayAdapter<Task> tasksAdapter;
+
+	private TimerManager timerManager;
+	private java.util.Map<Integer, Integer> todayByTask = new java.util.HashMap<>();
+	private java.util.Map<Integer, Integer> allTimeByTask = new java.util.HashMap<>();
 
 	@Override
 	protected void onPause() {
@@ -78,17 +87,26 @@ public class TaskListActivity extends AppCompatActivity {
 		parentActivity = WorkTimeTrackerActivity.getInstanceOrNull();
 
 		dao = Basics.get(this).getDao();
+		timerManager = Basics.get(this).getTimerManager();
 		tasks = dao.getAllTasks();
+		todayByTask = PebbleTaskTimes.todayByTaskId(dao, timerManager);
+		boolean anyBudget = false;
+		for (Task t : tasks) {
+			if (TaskBudget.hasBudget(t.getBudgetMinutes())) { anyBudget = true; break; }
+		}
+		allTimeByTask = anyBudget
+			? PebbleTaskTimes.allTimeByTaskId(dao, timerManager)
+			: new java.util.HashMap<>();
 		tasksAdapter = new FlexibleArrayAdapter<>(this,
             android.R.layout.simple_list_item_1, 0, tasks,
-            Task::getName, R.layout.list_item_inactive, new SeparatorIdentificationMethod<>() {
+            this::taskLabel, R.layout.list_item_inactive, new SeparatorIdentificationMethod<>() {
             @Override
             public boolean isSeparator(Task task) {
                 return !task.isActive();
             }
             @Override
             public String extractText(Task task) {
-                return task.getName() + " (" + getString(R.string.inactive) + ")";
+                return taskLabel(task) + " (" + getString(R.string.inactive) + ")";
             }
         });
 		tasksAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -104,6 +122,13 @@ public class TaskListActivity extends AppCompatActivity {
 		if (parentActivity != null) {
 			parentActivity.refreshTasks();
 		}
+	}
+
+	/** "name  <suffix>" where suffix is today's time, or all-time + percent for budgeted tasks. */
+	private String taskLabel(Task task) {
+		int today = todayByTask.getOrDefault(task.getId(), 0);
+		int allTime = allTimeByTask.getOrDefault(task.getId(), 0);
+		return task.getName() + "  " + TaskBudget.suffix(today, allTime, task.getBudgetMinutes());
 	}
 
 	@Override
@@ -160,6 +185,8 @@ public class TaskListActivity extends AppCompatActivity {
 		menu.add(Menu.NONE, TOGGLE_ACTIVATION_STATE_OF_TASK,
 			TOGGLE_ACTIVATION_STATE_OF_TASK, getString(R.string.toggle_activation_state_of_task))
 			.setIcon(R.drawable.ic_menu_revert);
+		menu.add(Menu.NONE, SET_BUDGET, SET_BUDGET,
+			getString(R.string.set_budget)).setIcon(R.drawable.ic_menu_info_details);
 		menu.add(Menu.NONE, DELETE_TASK, DELETE_TASK,
 			getString(R.string.delete_task)).setIcon(R.drawable.ic_menu_delete);
 		super.onCreateContextMenu(menu, v, menuInfo);
@@ -266,6 +293,38 @@ public class TaskListActivity extends AppCompatActivity {
 
 				alert.show();
 
+				return true;
+			case SET_BUDGET:
+				alert.setTitle(getString(R.string.set_budget));
+				alert.setMessage(getString(R.string.enter_task_budget));
+				final EditText budgetInput = new EditText(this);
+				budgetInput.setText(oldTask.getBudgetMinutes() == null
+						? "" : DateTimeUtil.formatDuration(oldTask.getBudgetMinutes()));
+				alert.setView(budgetInput);
+				alert.setPositiveButton(getString(R.string.ok), (dialog, whichButton) -> {
+					String value = budgetInput.getText().toString().trim();
+					Integer minutes;
+					if (value.isEmpty()) {
+						minutes = null; // clear budget
+					} else if (DateTimeUtil.isDurationValid(value)) {
+						int parsed = TimerManager.parseHoursMinutesString(DateTimeUtil.refineHourMinute(value));
+						minutes = parsed > 0 ? parsed : null; // 0:00 means no budget
+					} else {
+						return; // invalid input -> leave unchanged
+					}
+					oldTask.setBudgetMinutes(minutes);
+					Task updatedTask = dao.updateTask(oldTask);
+					Logger.debug("updated task with ID {} budget to {} min", oldTask.getId(),
+						updatedTask.getBudgetMinutes());
+					tasks.remove(taskPosition);
+					tasks.add(taskPosition, updatedTask);
+					tasksAdapter.notifyDataSetChanged();
+					refreshTasksOnParent();
+				});
+				alert.setNegativeButton(getString(R.string.cancel), (dialog, which) -> {
+					// do nothing
+				});
+				alert.show();
 				return true;
 			case DELETE_TASK:
 				if (dao.isTaskUsed(oldTask.getId())) {

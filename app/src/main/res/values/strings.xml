@@ -51,6 +51,8 @@
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="rename_task">Rename Task</string>
+    <string name="set_budget">Set budget</string>
+    <string name="enter_task_budget">Enter total-time budget (h:mm), empty for none</string>
     <string name="edit_event">Edit Event</string>
     <string name="edit_target">Edit Target</string>
     <string name="delete">Delete</string>
