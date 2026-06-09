@@ -56,24 +56,34 @@ public class PebbleStatusPusher implements Updatable {
             // exact event-creation instant that calling getCurrentTask() separately could cause).
             int taskId = 0;
             String taskName = "";
+            int taskBudgetMin = 0;
             if (tracking && latest.getTask() != null) {
                 taskId = latest.getTask();
                 Task task = dao.getTask(latest.getTask());
                 if (task != null) {
                     taskName = task.getName();
+                    if (task.getBudgetMinutes() != null) {
+                        taskBudgetMin = task.getBudgetMinutes();
+                    }
                 }
             }
 
             int totalWorkedTodayMin = (int) timerManager.calculateTimeSum(LocalDate.now(), PeriodEnum.DAY);
             Map<Integer, Integer> perTask = PebbleTaskTimes.todayByTaskId(dao, timerManager);
             int taskWorkedTodayMin = (tracking && perTask.containsKey(taskId)) ? perTask.get(taskId) : 0;
+            // Only scan all-time history when the current task actually has a budget.
+            int taskAllTimeMin = 0;
+            if (tracking && taskBudgetMin > 0) {
+                Map<Integer, Integer> perTaskAllTime = PebbleTaskTimes.allTimeByTaskId(dao, timerManager);
+                taskAllTimeMin = perTaskAllTime.getOrDefault(taskId, 0);
+            }
             long segmentStartEpoch = tracking ? latest.getDateTime().toEpochSecond() : 0L;
             long nowEpoch = System.currentTimeMillis() / 1000L;
             int dailyTargetMin = timerManager.getDailyWorkTimeTarget(LocalDate.now().getDayOfWeek());
 
             PebbleStatus status = PebbleStatus.of(
                     tracking, taskId, taskName, totalWorkedTodayMin, taskWorkedTodayMin,
-                    segmentStartEpoch, nowEpoch, dailyTargetMin, 0, 0);
+                    segmentStartEpoch, nowEpoch, dailyTargetMin, taskAllTimeMin, taskBudgetMin);
             sender.send(status);
         } catch (Exception e) {
             Logger.warn(e, "failed to push TWT status to Pebble");
