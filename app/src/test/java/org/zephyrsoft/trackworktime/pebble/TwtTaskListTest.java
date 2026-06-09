@@ -10,17 +10,17 @@ import java.util.List;
 public class TwtTaskListTest {
 
     @Test
-    public void encodesIdNameAndMinutesPerLine() {
+    public void encodesIdNameMinutesAndPercentPerLine() {
         String s = TwtTaskList.encode(Arrays.asList(
-                new TwtTaskList.Item(5, "Alpha", 0),
-                new TwtTaskList.Item(8, "Beta", 90)), 7);
-        assertThat(s).isEqualTo("5\tAlpha\t0\n8\tBeta\t90");
+                new TwtTaskList.Item(5, "Alpha", 0, -1),
+                new TwtTaskList.Item(8, "Beta", 900, 75)), 7);
+        assertThat(s).isEqualTo("5\tAlpha\t0\t-1\n8\tBeta\t900\t75");
     }
 
     @Test
     public void capsAtMax() {
         TwtTaskList.Item[] items = new TwtTaskList.Item[10];
-        for (int i = 0; i < 10; i++) items[i] = new TwtTaskList.Item(i, "T" + i, i);
+        for (int i = 0; i < 10; i++) items[i] = new TwtTaskList.Item(i, "T" + i, i, -1);
         String s = TwtTaskList.encode(Arrays.asList(items), 3);
         assertThat(s.split("\n")).hasLength(3);
     }
@@ -28,8 +28,8 @@ public class TwtTaskListTest {
     @Test
     public void stripsTabAndNewlineFromNames() {
         String s = TwtTaskList.encode(
-                List.of(new TwtTaskList.Item(1, "a\tb\nc", 5)), 7);
-        assertThat(s).isEqualTo("1\ta b c\t5");
+                List.of(new TwtTaskList.Item(1, "a\tb\nc", 5, -1)), 7);
+        assertThat(s).isEqualTo("1\ta b c\t5\t-1");
     }
 
     @Test
@@ -41,7 +41,7 @@ public class TwtTaskListTest {
     public void truncatesLongNamesTo32Chars() {
         String longName = "0123456789012345678901234567890123456789"; // 40 chars
         String s = TwtTaskList.encode(
-                List.of(new TwtTaskList.Item(3, longName, 12)), 7);
-        assertThat(s).isEqualTo("3\t01234567890123456789012345678901\t12"); // 32-char name
+                List.of(new TwtTaskList.Item(3, longName, 12, -1)), 7);
+        assertThat(s).isEqualTo("3\t01234567890123456789012345678901\t12\t-1"); // 32-char name
     }
 }

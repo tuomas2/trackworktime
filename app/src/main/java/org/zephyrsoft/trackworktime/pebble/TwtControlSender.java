@@ -51,7 +51,7 @@ public final class TwtControlSender {
             List<TwtTaskList.Item> items = new ArrayList<>();
             for (Task t : dao.getActiveTasksSortedByLastUsed()) {
                 int min = perTask.getOrDefault(t.getId(), 0);
-                items.add(new TwtTaskList.Item(t.getId(), t.getName(), min));
+                items.add(new TwtTaskList.Item(t.getId(), t.getName(), min, -1));
             }
             String list = TwtTaskList.encode(items, MAX_TASKS);
 
