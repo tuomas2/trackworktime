@@ -46,12 +46,31 @@ public final class TwtControlSender {
             }
             int workedMin = (int) timerManager.calculateTimeSum(LocalDate.now(), PeriodEnum.DAY);
 
-            Map<Integer, Integer> perTask =
+            List<Task> activeTasks = dao.getActiveTasksSortedByLastUsed();
+            boolean anyBudget = false;
+            for (Task t : activeTasks) {
+                if (TaskBudget.hasBudget(t.getBudgetMinutes())) { anyBudget = true; break; }
+            }
+            Map<Integer, Integer> perTaskToday =
                     PebbleTaskTimes.todayByTaskId(dao, timerManager);
+            // Only pay for the all-time scan when at least one task actually has a budget.
+            Map<Integer, Integer> perTaskAllTime = anyBudget
+                    ? PebbleTaskTimes.allTimeByTaskId(dao, timerManager)
+                    : java.util.Collections.emptyMap();
             List<TwtTaskList.Item> items = new ArrayList<>();
-            for (Task t : dao.getActiveTasksSortedByLastUsed()) {
-                int min = perTask.getOrDefault(t.getId(), 0);
-                items.add(new TwtTaskList.Item(t.getId(), t.getName(), min, -1));
+            for (Task t : activeTasks) {
+                Integer budget = t.getBudgetMinutes();
+                int displayMin;
+                int percent;
+                if (TaskBudget.hasBudget(budget)) {
+                    int allTimeMin = perTaskAllTime.getOrDefault(t.getId(), 0);
+                    displayMin = allTimeMin;
+                    percent = TaskBudget.percent(allTimeMin, budget);
+                } else {
+                    displayMin = perTaskToday.getOrDefault(t.getId(), 0);
+                    percent = -1;
+                }
+                items.add(new TwtTaskList.Item(t.getId(), t.getName(), displayMin, percent));
             }
             String list = TwtTaskList.encode(items, MAX_TASKS);
 
