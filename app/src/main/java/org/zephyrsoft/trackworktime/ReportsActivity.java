@@ -47,6 +47,7 @@ import org.zephyrsoft.trackworktime.model.TypeEnum;
 import org.zephyrsoft.trackworktime.model.Unit;
 import org.zephyrsoft.trackworktime.options.Key;
 import org.zephyrsoft.trackworktime.report.CsvGenerator;
+import org.zephyrsoft.trackworktime.report.TaskPrefixGrouper;
 import org.zephyrsoft.trackworktime.report.ReportPreviewActivity;
 import org.zephyrsoft.trackworktime.report.TaskAndHint;
 import org.zephyrsoft.trackworktime.timer.TimeCalculator;
@@ -86,6 +87,7 @@ public class ReportsActivity extends AppCompatActivity {
 				.putInt(Key.REPORT_LAST_RANGE.getName(), binding.range.getCheckedRadioButtonId())
 				.putInt(Key.REPORT_LAST_UNIT.getName(), binding.unit.getCheckedRadioButtonId())
 				.putInt(Key.REPORT_LAST_GROUPING.getName(), binding.grouping.getCheckedRadioButtonId())
+				.putBoolean(Key.REPORT_LAST_GROUP_BY_PREFIX.getName(), binding.groupByPrefix.isChecked())
 				.apply();
 	}
 
@@ -133,6 +135,13 @@ public class ReportsActivity extends AppCompatActivity {
 
 		int groupingId = loadSelectedId(Key.REPORT_LAST_GROUPING);
 		checkRadioGroup(binding.grouping, groupingId, R.id.groupingNone);
+
+		binding.groupByPrefix.setChecked(
+				preferences.getBoolean(Key.REPORT_LAST_GROUP_BY_PREFIX.getName(), false));
+	}
+
+	private boolean isPrefixGroupingEnabled() {
+		return binding.groupByPrefix.isChecked();
 	}
 
 	private int loadSelectedId(Key key) {
@@ -160,25 +169,33 @@ public class ReportsActivity extends AppCompatActivity {
 				report = createReportForTimesByTask();
 				break;
 			case R.id.groupingByTaskAndHint:
-				report = createReportForTimesByTaskAndHint();
+				report = isPrefixGroupingEnabled()
+					? createReportForTimesByTask()
+					: createReportForTimesByTaskAndHint();
 				break;
 			case R.id.groupingByTaskPerDay:
 				report = createReportForTimesByTaskPerDay();
 				break;
 			case R.id.groupingByTaskAndHintPerDay:
-				report = createReportForTimesByTaskAndHintPerDay();
+				report = isPrefixGroupingEnabled()
+					? createReportForTimesByTaskPerDay()
+					: createReportForTimesByTaskAndHintPerDay();
 				break;
 			case R.id.groupingByTaskPerWeek:
 				report = createReportForTimesByTaskPerWeek();
 				break;
 			case R.id.groupingByTaskAndHintPerWeek:
-				report = createReportForTimesByTaskAndHintPerWeek();
+				report = isPrefixGroupingEnabled()
+					? createReportForTimesByTaskPerWeek()
+					: createReportForTimesByTaskAndHintPerWeek();
 				break;
 			case R.id.groupingByTaskPerMonth:
 				report = createReportForTimesByTaskPerMonth();
 				break;
 			case R.id.groupingByTaskAndHintPerMonth:
-				report = createReportForTimesByTaskAndHintPerMonth();
+				report = isPrefixGroupingEnabled()
+					? createReportForTimesByTaskPerMonth()
+					: createReportForTimesByTaskAndHintPerMonth();
 				break;
 			case R.id.targetGroupingNone:
 				report = createReportForAllTargets();
@@ -233,25 +250,41 @@ public class ReportsActivity extends AppCompatActivity {
 				exportTimesByTask();
 				break;
 			case R.id.groupingByTaskAndHint:
-				exportTimesByTaskAndHint();
+				if (isPrefixGroupingEnabled()) {
+					exportTimesByTask();
+				} else {
+					exportTimesByTaskAndHint();
+				}
 				break;
 			case R.id.groupingByTaskPerDay:
 				exportTimesByTaskPerDay();
 				break;
 			case R.id.groupingByTaskAndHintPerDay:
-				exportTimesByTaskAndHintPerDay();
+				if (isPrefixGroupingEnabled()) {
+					exportTimesByTaskPerDay();
+				} else {
+					exportTimesByTaskAndHintPerDay();
+				}
 				break;
 			case R.id.groupingByTaskPerWeek:
 				exportTimesByTaskPerWeek();
 				break;
 			case R.id.groupingByTaskAndHintPerWeek:
-				exportTimesByTaskAndHintPerWeek();
+				if (isPrefixGroupingEnabled()) {
+					exportTimesByTaskPerWeek();
+				} else {
+					exportTimesByTaskAndHintPerWeek();
+				}
 				break;
 			case R.id.groupingByTaskPerMonth:
 				exportTimesByTaskPerMonth();
 				break;
 			case R.id.groupingByTaskAndHintPerMonth:
-				exportTimesByTaskAndHintPerMonth();
+				if (isPrefixGroupingEnabled()) {
+					exportTimesByTaskPerMonth();
+				} else {
+					exportTimesByTaskAndHintPerMonth();
+				}
 				break;
 			case R.id.targetGroupingNone:
 				exportAllTargets();
@@ -330,7 +363,12 @@ public class ReportsActivity extends AppCompatActivity {
 		truncateEventsToMinute(events);
 		Map<Task, TimeSum> sums = timeCalculator.calculateSums(beginAndEnd[0].toOffsetDateTime(), beginAndEnd[1].toOffsetDateTime(), events);
 
-		String report = csvGenerator.createSumsCsv(sums, TASK_WITH_ID);
+		String report;
+		if (isPrefixGroupingEnabled()) {
+			report = csvGenerator.createSumsCsv(TaskPrefixGrouper.groupByPrefix(sums), prefix -> prefix);
+		} else {
+			report = csvGenerator.createSumsCsv(sums, TASK_WITH_ID);
+		}
 		String reportName = describeTimeRange(beginAndEnd);
 		if (report == null) {
 			logAndShowError(reportName);
@@ -404,7 +442,13 @@ public class ReportsActivity extends AppCompatActivity {
 				beginAndEnd[1]);
 		Map<ZonedDateTime, Map<Task, TimeSum>> sumsPerRange = calculateSumsPerRange(rangeBeginnings, beginAndEnd[1]);
 
-		String report = csvGenerator.createSumsPerDayCsv(sumsPerRange, TASK_WITH_ID);
+		String report;
+		if (isPrefixGroupingEnabled()) {
+			report = csvGenerator.createSumsPerDayCsv(
+				TaskPrefixGrouper.groupPerRange(sumsPerRange), prefix -> prefix);
+		} else {
+			report = csvGenerator.createSumsPerDayCsv(sumsPerRange, TASK_WITH_ID);
+		}
 		String reportName = describeTimeRange(beginAndEnd);
 		if (report == null) {
 			logAndShowError(reportName);
@@ -478,9 +522,14 @@ public class ReportsActivity extends AppCompatActivity {
 				beginAndEnd[1]);
 		Map<ZonedDateTime, Map<Task, TimeSum>> sumsPerRange = calculateSumsPerRange(rangeBeginnings, beginAndEnd[1]);
 
-		String report = csvGenerator.createSumsPerWeekCsv(sumsPerRange,
-			new String[] { "week", "task", "spent" },
-			TASK_WITH_ID);
+		String report;
+		if (isPrefixGroupingEnabled()) {
+			report = csvGenerator.createSumsPerWeekCsv(TaskPrefixGrouper.groupPerRange(sumsPerRange),
+				new String[] { "week", "task", "spent" }, prefix -> prefix);
+		} else {
+			report = csvGenerator.createSumsPerWeekCsv(sumsPerRange,
+				new String[] { "week", "task", "spent" }, TASK_WITH_ID);
+		}
 		String reportName = describeTimeRange(beginAndEnd);
 		if (report == null) {
 			logAndShowError(reportName);
@@ -519,7 +568,7 @@ public class ReportsActivity extends AppCompatActivity {
 
 		String report = csvGenerator.createSumsWithHintsPerWeeksCsv(sumsPerRange,
 				new String[] { "week", "task", "text", "spent" },
-				taskAndHint -> taskAndHint.getTask().getName() + " (ID=" + taskAndHint.getTask().getId() + ")",
+				taskAndHint -> TASK_WITH_ID.apply(taskAndHint.getTask()),
 				taskAndHint -> taskAndHint.getText());
 		String reportName = describeTimeRange(beginAndEnd);
 		if (report == null) {
@@ -557,9 +606,14 @@ public class ReportsActivity extends AppCompatActivity {
 				beginAndEnd[1]);
 		Map<ZonedDateTime, Map<Task, TimeSum>> sumsPerRange = calculateSumsPerRange(rangeBeginnings, beginAndEnd[1]);
 
-		String report = csvGenerator.createSumsPerMonthCsv(sumsPerRange,
-			new String[] { "month", "task", "spent" },
-			TASK_WITH_ID);
+		String report;
+		if (isPrefixGroupingEnabled()) {
+			report = csvGenerator.createSumsPerMonthCsv(TaskPrefixGrouper.groupPerRange(sumsPerRange),
+				new String[] { "month", "task", "spent" }, prefix -> prefix);
+		} else {
+			report = csvGenerator.createSumsPerMonthCsv(sumsPerRange,
+				new String[] { "month", "task", "spent" }, TASK_WITH_ID);
+		}
 		String reportName = describeTimeRange(beginAndEnd);
 		if (report == null) {
 			logAndShowError(reportName);
@@ -598,7 +652,7 @@ public class ReportsActivity extends AppCompatActivity {
 
 		String report = csvGenerator.createSumsWithHintsPerMonthCsv(sumsPerRange,
 				new String[] { "month", "task", "text", "spent" },
-				taskAndHint -> taskAndHint.getTask().getName() + " (ID=" + taskAndHint.getTask().getId() + ")",
+				taskAndHint -> TASK_WITH_ID.apply(taskAndHint.getTask()),
 				taskAndHint -> taskAndHint.getText());
 		String reportName = describeTimeRange(beginAndEnd);
 		if (report == null) {

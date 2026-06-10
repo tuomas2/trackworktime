@@ -56,6 +56,19 @@ public class CsvGeneratorSumsTest {
 		String csv = csvGenerator.createSumsPerDayCsv(sumsPerRange, prefix -> prefix);
 
 		assertTrue(csv.contains("day;task;spent"));
-		assertTrue(csv.contains("vrt;2:00"));
+		assertTrue(csv.contains("2026-06-09;vrt;2:00"));
 	}
+
+	@Test
+	public void createSumsCsvHandlesNullKey() {
+		Map<Task, TimeSum> sums = new HashMap<>();
+		sums.put(null, timeSum(0, 30));
+
+		String csv = csvGenerator.createSumsCsv(sums, TASK_WITH_ID);
+
+		assertTrue(csv.contains(";0:30"));
+	}
+
+	private static final androidx.arch.core.util.Function<Task, String> TASK_WITH_ID =
+		task -> task.getName() + " (ID=" + task.getId() + ")";
 }

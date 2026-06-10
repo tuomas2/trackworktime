@@ -94,6 +94,7 @@ public enum Key {
 	REPORT_LAST_RANGE("keyReportLastUsedRange", DataType.INTEGER, null, null),
 	REPORT_LAST_UNIT("keyReportLastUsedUnit", DataType.INTEGER, null, null),
 	REPORT_LAST_GROUPING("keyReportLastUsedGrouping", DataType.INTEGER, null, null),
+	REPORT_LAST_GROUP_BY_PREFIX("keyReportLastUsedGroupByPrefix", DataType.BOOLEAN, null, null),
 
 	AUTOMATIC_BACKUP_LAST_TIME("keyAutomaticBackupLastTime", DataType.LONG, null, null);
 
