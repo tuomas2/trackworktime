@@ -38,4 +38,9 @@ public final class TwtPebbleKeys {
     /** All-time worked minutes on the CURRENT task, EXCLUDING the running segment
      *  (the watch adds the live segment itself, like TWT_TASK_WORKED_BEFORE_MIN). */
     public static final int TWT_TASK_TOTAL_BEFORE_MIN = 10046;
+    /** GROSS (no auto-pause) worked minutes today over ALL tasks, EXCLUDING the running
+     *  segment — same basis as TWT_TASK_WORKED_BEFORE_MIN, so the watch computes the
+     *  unbudgeted task percent gross/gross instead of gross/net (which overshot 100%).
+     *  Sits after later-appended non-TWT keys in package.json messageKeys -> ID 10057. */
+    public static final int TWT_DAY_GROSS_BEFORE_MIN = 10057;
 }

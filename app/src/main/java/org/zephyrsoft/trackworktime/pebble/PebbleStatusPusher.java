@@ -71,6 +71,12 @@ public class PebbleStatusPusher implements Updatable {
             int totalWorkedTodayMin = (int) timerManager.calculateTimeSum(LocalDate.now(), PeriodEnum.DAY);
             Map<Integer, Integer> perTask = PebbleTaskTimes.todayByTaskId(dao, timerManager);
             int taskWorkedTodayMin = (tracking && perTask.containsKey(taskId)) ? perTask.get(taskId) : 0;
+            // gross day total on the same basis as the per-task values (no auto-pause deduction),
+            // so the watch can compute the unbudgeted task percent gross/gross
+            int dayGrossTodayMin = 0;
+            for (int minutes : perTask.values()) {
+                dayGrossTodayMin += minutes;
+            }
             // Only scan all-time history when the current task actually has a budget.
             int taskAllTimeMin = 0;
             if (tracking && taskBudgetMin > 0) {
@@ -83,7 +89,8 @@ public class PebbleStatusPusher implements Updatable {
 
             PebbleStatus status = PebbleStatus.of(
                     tracking, taskId, taskName, totalWorkedTodayMin, taskWorkedTodayMin,
-                    segmentStartEpoch, nowEpoch, dailyTargetMin, taskAllTimeMin, taskBudgetMin);
+                    segmentStartEpoch, nowEpoch, dailyTargetMin, taskAllTimeMin, taskBudgetMin,
+                    dayGrossTodayMin);
             sender.send(status);
         } catch (Exception e) {
             Logger.warn(e, "failed to push TWT status to Pebble");
