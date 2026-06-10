@@ -288,12 +288,12 @@ public class CsvGenerator {
 		return resultWriter.toString();
 	}
 
-	public String createSumsCsv(Map<Task, TimeSum> sums) {
+	public <T> String createSumsCsv(Map<T, TimeSum> sums, Function<T, String> extractor) {
 		List<TimeSumsHolder> prepared = new ArrayList<>();
-		for (Entry<Task, TimeSum> entry : sums.entrySet()) {
+		for (Entry<T, TimeSum> entry : sums.entrySet()) {
 			String task = "";
 			if (entry.getKey() != null) {
-				task = entry.getKey().getName() + " (ID=" + entry.getKey().getId() + ")";
+				task = extractor.apply(entry.getKey());
 			}
 			prepared.add(new TimeSumsHolder(null, null, null, task, entry.getValue()));
 		}
@@ -322,15 +322,16 @@ public class CsvGenerator {
 		return createCsv(prepared, new String[] { "task", "text", "spent" }, getSumsAndHintsProcessors());
 	}
 
-	public String createSumsPerDayCsv(Map<ZonedDateTime, Map<Task, TimeSum>> sumsPerRange) {
+	public <T> String createSumsPerDayCsv(Map<ZonedDateTime, Map<T, TimeSum>> sumsPerRange,
+										  Function<T, String> extractor) {
 		List<TimeSumsHolder> prepared = new ArrayList<>();
-		for (Entry<ZonedDateTime, Map<Task, TimeSum>> rangeEntry : sumsPerRange.entrySet()) {
+		for (Entry<ZonedDateTime, Map<T, TimeSum>> rangeEntry : sumsPerRange.entrySet()) {
 			String day = DateTimeUtil.dateToULString(rangeEntry.getKey());
-			Map<Task, TimeSum> sums = rangeEntry.getValue();
-			for (Entry<Task, TimeSum> entry : sums.entrySet()) {
+			Map<T, TimeSum> sums = rangeEntry.getValue();
+			for (Entry<T, TimeSum> entry : sums.entrySet()) {
 				String task = "";
 				if (entry.getKey() != null) {
-					task = entry.getKey().getName() + " (ID=" + entry.getKey().getId() + ")";
+					task = extractor.apply(entry.getKey());
 				}
 				prepared.add(TimeSumsHolder.createForDay(day, task, entry.getValue()));
 			}

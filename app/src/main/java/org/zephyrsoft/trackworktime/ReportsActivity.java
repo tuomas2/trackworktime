@@ -29,6 +29,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.arch.core.util.Function;
 import androidx.preference.PreferenceManager;
 
 import org.apache.commons.lang3.StringUtils;
@@ -65,6 +66,9 @@ import java.util.Map;
 public class ReportsActivity extends AppCompatActivity {
 
 	private ReportsBinding binding;
+
+	private static final Function<Task, String> TASK_WITH_ID =
+		task -> task.getName() + " (ID=" + task.getId() + ")";
 
 	private DAO dao;
 	private TimeCalculator timeCalculator;
@@ -326,7 +330,7 @@ public class ReportsActivity extends AppCompatActivity {
 		truncateEventsToMinute(events);
 		Map<Task, TimeSum> sums = timeCalculator.calculateSums(beginAndEnd[0].toOffsetDateTime(), beginAndEnd[1].toOffsetDateTime(), events);
 
-		String report = csvGenerator.createSumsCsv(sums);
+		String report = csvGenerator.createSumsCsv(sums, TASK_WITH_ID);
 		String reportName = describeTimeRange(beginAndEnd);
 		if (report == null) {
 			logAndShowError(reportName);
@@ -400,7 +404,7 @@ public class ReportsActivity extends AppCompatActivity {
 				beginAndEnd[1]);
 		Map<ZonedDateTime, Map<Task, TimeSum>> sumsPerRange = calculateSumsPerRange(rangeBeginnings, beginAndEnd[1]);
 
-		String report = csvGenerator.createSumsPerDayCsv(sumsPerRange);
+		String report = csvGenerator.createSumsPerDayCsv(sumsPerRange, TASK_WITH_ID);
 		String reportName = describeTimeRange(beginAndEnd);
 		if (report == null) {
 			logAndShowError(reportName);
@@ -476,7 +480,7 @@ public class ReportsActivity extends AppCompatActivity {
 
 		String report = csvGenerator.createSumsPerWeekCsv(sumsPerRange,
 			new String[] { "week", "task", "spent" },
-			task -> task.getName() + " (ID=" + task.getId() + ")");
+			TASK_WITH_ID);
 		String reportName = describeTimeRange(beginAndEnd);
 		if (report == null) {
 			logAndShowError(reportName);
@@ -555,7 +559,7 @@ public class ReportsActivity extends AppCompatActivity {
 
 		String report = csvGenerator.createSumsPerMonthCsv(sumsPerRange,
 			new String[] { "month", "task", "spent" },
-			task -> task.getName() + " (ID=" + task.getId() + ")");
+			TASK_WITH_ID);
 		String reportName = describeTimeRange(beginAndEnd);
 		if (report == null) {
 			logAndShowError(reportName);
