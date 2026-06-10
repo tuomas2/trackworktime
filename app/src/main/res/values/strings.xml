@@ -293,7 +293,7 @@
     <string name="reportTitle">Track Work Time Report</string>
     <string name="reportTimeFrame">report time frame: %1$s</string>
     <string name="sendReport">Send report...</string>
-    <string name="reportGroupByPrefix">Combine tasks with the same first word</string>
+    <string name="reportGroupByPrefix">Combine tasks with the same first word (ignores hints)</string>
     <string name="reportRangeLast">last</string>
     <string name="reportRangeCurrent">current</string>
     <string name="reportRangeLastAndCurrent">last and current</string>

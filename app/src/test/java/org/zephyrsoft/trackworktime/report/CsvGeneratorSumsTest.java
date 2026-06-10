@@ -3,6 +3,7 @@ package org.zephyrsoft.trackworktime.report;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import androidx.arch.core.util.Function;
 import org.junit.Test;
 import org.zephyrsoft.trackworktime.model.Task;
 import org.zephyrsoft.trackworktime.model.TimeSum;
@@ -15,6 +16,10 @@ import java.util.Map;
 public class CsvGeneratorSumsTest {
 
 	private final CsvGenerator csvGenerator = new CsvGenerator(null, null);
+
+	// Mirrors the private constant in ReportsActivity
+	private static final Function<Task, String> TASK_WITH_ID =
+		task -> task.getName() + " (ID=" + task.getId() + ")";
 
 	private static TimeSum timeSum(int hours, int minutes) {
 		TimeSum sum = new TimeSum();
@@ -66,9 +71,15 @@ public class CsvGeneratorSumsTest {
 
 		String csv = csvGenerator.createSumsCsv(sums, TASK_WITH_ID);
 
-		assertTrue(csv.contains(";0:30"));
+		// The row for the null key has an empty task column
+		String[] lines = csv.split("\n");
+		boolean foundEmptyTaskRow = false;
+		for (String line : lines) {
+			if (line.trim().startsWith(";0:30")) {
+				foundEmptyTaskRow = true;
+				break;
+			}
+		}
+		assertTrue("CSV should contain row with empty task column and 0:30 time", foundEmptyTaskRow);
 	}
-
-	private static final androidx.arch.core.util.Function<Task, String> TASK_WITH_ID =
-		task -> task.getName() + " (ID=" + task.getId() + ")";
 }
