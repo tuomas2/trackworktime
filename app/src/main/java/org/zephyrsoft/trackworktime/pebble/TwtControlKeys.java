@@ -6,7 +6,9 @@ import java.util.UUID;
  * AppMessage keys + UUID for the TWT Control watchapp. Integers are PINNED from
  * twt-control/build/js/message_keys.json (verified against build output: CMD=10000,
  * CMD_TASK_ID=10001, ST_TRACKING=10002, ST_TASK_NAME=10003, ST_WORKED_MIN=10004,
- * TASK_LIST=10005). Independent key space from the watchface's TWT_* keys (messages route by UUID).
+ * TASK_LIST=10005, ST_REMAIN_MIN=10007; CFG_AUTO_RETURN=10006 is sent by the watch's
+ * JS config page only, so it has no constant here). Independent key space from the
+ * watchface's TWT_* keys (messages route by UUID).
  */
 public final class TwtControlKeys {
 
@@ -26,4 +28,8 @@ public final class TwtControlKeys {
     public static final int ST_TASK_NAME  = 10003; // string
     public static final int ST_WORKED_MIN = 10004; // int32
     public static final int TASK_LIST     = 10005; // string "id\tname\nid\tname"
+
+    /** int32 minutes remaining today (TimerManager.getMinutesRemaining());
+     *  may be negative (overtime). {@link Integer#MIN_VALUE} = no estimate (non-work day). */
+    public static final int ST_REMAIN_MIN = 10007;
 }

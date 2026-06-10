@@ -79,6 +79,9 @@ public final class TwtControlSender {
             dict.put(TwtControlKeys.ST_TASK_NAME, new PebbleDictionaryItem.Text(taskName));
             dict.put(TwtControlKeys.ST_WORKED_MIN, new PebbleDictionaryItem.Int32(workedMin));
             dict.put(TwtControlKeys.TASK_LIST, new PebbleDictionaryItem.Text(list));
+            Integer remainMin = timerManager.getMinutesRemaining();
+            dict.put(TwtControlKeys.ST_REMAIN_MIN, new PebbleDictionaryItem.Int32(
+                    remainMin != null ? remainMin : Integer.MIN_VALUE));
             PebbleSenders.sendAndClose(context, TwtControlKeys.CONTROL_UUID, dict, "TWT Control status/list");
         } catch (Exception e) {
             Logger.warn(e, "failed to send status/list to TWT Control");
