@@ -60,6 +60,7 @@ public final class TwtControlSender {
             List<TwtTaskList.Item> items = new ArrayList<>();
             for (Task t : activeTasks) {
                 Integer budget = t.getBudgetMinutes();
+                int todayMin = perTaskToday.getOrDefault(t.getId(), 0);
                 int displayMin;
                 int percent;
                 if (TaskBudget.hasBudget(budget)) {
@@ -67,10 +68,12 @@ public final class TwtControlSender {
                     displayMin = allTimeMin;
                     percent = TaskBudget.percent(allTimeMin, budget);
                 } else {
-                    displayMin = perTaskToday.getOrDefault(t.getId(), 0);
+                    displayMin = todayMin;
                     percent = -1;
                 }
-                items.add(new TwtTaskList.Item(t.getId(), t.getName(), displayMin, percent));
+                // task's share of today's total (-1 while the day total is still 0)
+                int dayPercent = TaskBudget.percent(todayMin, workedMin);
+                items.add(new TwtTaskList.Item(t.getId(), t.getName(), displayMin, percent, dayPercent));
             }
             String list = TwtTaskList.encode(items, MAX_TASKS);
 
