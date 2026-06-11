@@ -51,20 +51,23 @@ public final class TwtControlSender {
             for (Task t : activeTasks) {
                 if (TaskBudget.hasBudget(t.getBudgetMinutes())) { anyBudget = true; break; }
             }
-            Map<Integer, Integer> perTaskToday =
-                    PebbleTaskTimes.todayByTaskId(dao, timerManager);
+            // Net of today's not-yet-persisted auto-pause (attributed to the task that spanned the
+            // lunch), so the per-task list matches the day total and the watchface task row.
+            Map<Integer, Integer> perTaskToday = PebbleTaskTimes.deductTodayAutoPause(
+                    PebbleTaskTimes.todayByTaskId(dao, timerManager), dao, timerManager);
             // Only pay for the all-time scan when at least one task actually has a budget.
             Map<Integer, Integer> perTaskAllTime = anyBudget
-                    ? PebbleTaskTimes.allTimeByTaskId(dao, timerManager)
+                    ? PebbleTaskTimes.deductTodayAutoPause(
+                            PebbleTaskTimes.allTimeByTaskId(dao, timerManager), dao, timerManager)
                     : java.util.Collections.emptyMap();
             List<TwtTaskList.Item> items = new ArrayList<>();
             for (Task t : activeTasks) {
                 Integer budget = t.getBudgetMinutes();
-                int todayMin = perTaskToday.getOrDefault(t.getId(), 0);
+                int todayMin = Math.max(0, perTaskToday.getOrDefault(t.getId(), 0));
                 int displayMin;
                 int percent;
                 if (TaskBudget.hasBudget(budget)) {
-                    int allTimeMin = perTaskAllTime.getOrDefault(t.getId(), 0);
+                    int allTimeMin = Math.max(0, perTaskAllTime.getOrDefault(t.getId(), 0));
                     displayMin = allTimeMin;
                     percent = TaskBudget.percent(allTimeMin, budget);
                 } else {

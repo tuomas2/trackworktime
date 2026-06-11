@@ -69,18 +69,23 @@ public class PebbleStatusPusher implements Updatable {
             }
 
             int totalWorkedTodayMin = (int) timerManager.calculateTimeSum(LocalDate.now(), PeriodEnum.DAY);
-            Map<Integer, Integer> perTask = PebbleTaskTimes.todayByTaskId(dao, timerManager);
-            int taskWorkedTodayMin = (tracking && perTask.containsKey(taskId)) ? perTask.get(taskId) : 0;
-            // gross day total on the same basis as the per-task values (no auto-pause deduction),
-            // so the watch can compute the unbudgeted task percent gross/gross
+            Map<Integer, Integer> perTaskGross = PebbleTaskTimes.todayByTaskId(dao, timerManager);
+            // gross day total on the same basis as the GROSS per-task values (no auto-pause
+            // deduction), so the watch can compute the unbudgeted task percent gross/gross -> sum
+            // before the auto-pause deduction below.
             int dayGrossTodayMin = 0;
-            for (int minutes : perTask.values()) {
+            for (int minutes : perTaskGross.values()) {
                 dayGrossTodayMin += minutes;
             }
+            // Net per-task: attribute today's not-yet-persisted auto-pause to the task that spanned
+            // the lunch, so the task row matches the day total (and TWT Control).
+            Map<Integer, Integer> perTask = PebbleTaskTimes.deductTodayAutoPause(perTaskGross, dao, timerManager);
+            int taskWorkedTodayMin = (tracking && perTask.containsKey(taskId)) ? perTask.get(taskId) : 0;
             // Only scan all-time history when the current task actually has a budget.
             int taskAllTimeMin = 0;
             if (tracking && taskBudgetMin > 0) {
-                Map<Integer, Integer> perTaskAllTime = PebbleTaskTimes.allTimeByTaskId(dao, timerManager);
+                Map<Integer, Integer> perTaskAllTime = PebbleTaskTimes.deductTodayAutoPause(
+                        PebbleTaskTimes.allTimeByTaskId(dao, timerManager), dao, timerManager);
                 taskAllTimeMin = perTaskAllTime.getOrDefault(taskId, 0);
             }
             long segmentStartEpoch = tracking ? latest.getDateTime().toEpochSecond() : 0L;

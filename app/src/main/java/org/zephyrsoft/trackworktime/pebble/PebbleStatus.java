@@ -50,8 +50,13 @@ public final class PebbleStatus {
             // (The gross fields below stay clamped — the running segment is always part of their
             // gross totals, so they never legitimately go negative.)
             int workedBefore = totalWorkedTodayMin - runningMin;
-            int taskWorkedBefore = Math.max(0, taskWorkedTodayMin - runningMin);
-            int taskTotalBefore = Math.max(0, taskAllTimeMin - runningMin);
+            // taskWorked/taskTotal are passed in NET of today's auto-pause (the lunch was attributed
+            // to this task upstream); like workedBefore they can legitimately go negative when the
+            // running segment spans the pause, and the watch reconstructs task = before + running.
+            int taskWorkedBefore = taskWorkedTodayMin - runningMin;
+            int taskTotalBefore = taskAllTimeMin - runningMin;
+            // dayGross stays GROSS (no auto-pause): it's the gross/gross denominator, and the running
+            // segment is always part of it, so it never legitimately goes negative -> keep the clamp.
             int dayGrossBefore = Math.max(0, dayGrossTodayMin - runningMin);
             return new PebbleStatus(true, taskId, name, workedBefore, taskWorkedBefore,
                     segmentStartEpoch, dailyTargetMin, taskTotalBefore, Math.max(0, taskBudgetMin),

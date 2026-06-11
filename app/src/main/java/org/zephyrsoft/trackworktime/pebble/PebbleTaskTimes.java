@@ -33,6 +33,41 @@ public final class PebbleTaskTimes {
 
     private PebbleTaskTimes() {}
 
+    /**
+     * Return a copy of {@code perTask} with today's not-yet-persisted auto-pause (lunch) subtracted
+     * from the task whose segment spans the pause window. While the user is still continuously
+     * clocked in across lunch, the break events are not in the DB yet (they are inserted on
+     * clock-out), so the gross sums from {@link #todayByTaskId}/{@link #allTimeByTaskId} still
+     * include the lunch — exactly the way the day total would, which is why
+     * {@code TimeCalculatorV2.calculateNextDay} subtracts it on the fly too. This mirrors that for
+     * the per-task numbers so the watchface task row and TWT Control list match the day total (and
+     * match what a real CLOCK_OUT/CLOCK_IN break would produce).
+     *
+     * <p>Kept OUT of the memoized gross sums on purpose: applicability is time-dependent (it only
+     * kicks in once "now" is past the pause window, with no new DB event), so baking it into a
+     * version-keyed cache would return a stale value. The result may go below zero — the watchface
+     * caller folds the running segment back in and depends on that; TWT Control clamps when sending.
+     */
+    public static Map<Integer, Integer> deductTodayAutoPause(
+            Map<Integer, Integer> perTask, DAO dao, TimerManager timerManager) {
+        Map<Integer, Integer> out = new HashMap<>(perTask);
+        if (!timerManager.isAutoPauseEnabled()) {
+            return out;
+        }
+        OffsetDateTime now = OffsetDateTime.now();
+        if (!timerManager.isAutoPauseApplicable(now)) {
+            return out;
+        }
+        OffsetDateTime begin = now.with(timerManager.getAutoPauseBegin());
+        Event lastBeforePause = dao.getLastEventBefore(begin);
+        if (lastBeforePause == null || lastBeforePause.getTask() == null) {
+            return out;
+        }
+        int autoPauseMin = (int) timerManager.getAutoPauseDuration();
+        out.merge(lastBeforePause.getTask(), -autoPauseMin, Integer::sum);
+        return out;
+    }
+
     public static Map<Integer, Integer> todayByTaskId(DAO dao, TimerManager timerManager) {
         ZoneId zone = timerManager.getHomeTimeZone();
         ZonedDateTime begin = LocalDate.now().atStartOfDay(zone);

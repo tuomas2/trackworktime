@@ -65,10 +65,20 @@ public class PebbleStatusTest {
     }
 
     @Test
-    public void taskTotalBeforeNeverNegative() {
-        // running (30) larger than task all-time (10) -> clamp to 0
-        PebbleStatus s = PebbleStatus.of(true, 1, "X", 130, 10, 1_000_000L, 1_000_000L + 30 * 60, 450, 10, 1200, 160);
-        assertThat(s.taskTotalBeforeMin()).isEqualTo(0);
+    public void taskBeforeFieldsMayBeNegative_soAutoPauseSurvivesTheWatchReconstruction() {
+        // Same mechanism as workedBefore, but for the per-task row: the current task was clocked in
+        // across lunch, so its NET today/all-time totals (auto-pause already deducted upstream) are
+        // shorter than the running segment. The before-fields must stay negative because the watch
+        // reconstructs taskToday = taskWorkedBefore + running; clamping would re-add the full segment
+        // and put the lunch back on the task row.
+        int taskNet = 330, taskAllTimeNet = 330, runningMin = 360;
+        PebbleStatus s = PebbleStatus.of(
+                true, 1, "X", 330, taskNet, 1_000_000L, 1_000_000L + runningMin * 60,
+                450, taskAllTimeNet, 1200, 360);
+        assertThat(s.taskWorkedBeforeMin()).isEqualTo(-30);
+        assertThat(s.taskTotalBeforeMin()).isEqualTo(-30);
+        assertThat(s.taskWorkedBeforeMin() + runningMin).isEqualTo(taskNet);       // lunch preserved
+        assertThat(s.taskTotalBeforeMin() + runningMin).isEqualTo(taskAllTimeNet);
     }
 
     @Test
