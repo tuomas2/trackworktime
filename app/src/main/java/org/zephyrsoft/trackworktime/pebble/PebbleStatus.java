@@ -43,7 +43,13 @@ public final class PebbleStatus {
         }
         if (tracking) {
             int runningMin = (int) Math.max(0, (nowEpoch - segmentStartEpoch) / 60);
-            int workedBefore = Math.max(0, totalWorkedTodayMin - runningMin);
+            // NOT clamped to >= 0: when an auto-pause (lunch) falls inside the single running
+            // segment, the net day total is SHORTER than the running segment, so workedBefore is
+            // legitimately negative. The watch reconstructs worked = workedBefore + running, so a
+            // clamp to 0 would make it re-add the full segment and silently drop the auto-pause.
+            // (The gross fields below stay clamped — the running segment is always part of their
+            // gross totals, so they never legitimately go negative.)
+            int workedBefore = totalWorkedTodayMin - runningMin;
             int taskWorkedBefore = Math.max(0, taskWorkedTodayMin - runningMin);
             int taskTotalBefore = Math.max(0, taskAllTimeMin - runningMin);
             int dayGrossBefore = Math.max(0, dayGrossTodayMin - runningMin);

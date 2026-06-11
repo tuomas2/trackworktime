@@ -24,6 +24,23 @@ public class PebbleStatusTest {
     }
 
     @Test
+    public void workedBeforeMayBeNegative_soAutoPauseSurvivesTheWatchReconstruction() {
+        // Continuously clocked in since before lunch: the auto-pause (e.g. 30min) is deducted from
+        // the day total, but it sits IN THE MIDDLE of the single running segment. So the running
+        // segment (360min) is LONGER than the net worked total (330min). workedBefore must be allowed
+        // to go negative (-30), because the watch reconstructs worked = workedBefore + running, and
+        // clamping it to 0 would make the watch re-add the full segment and silently drop the lunch.
+        int totalNet = 330;             // 6h elapsed minus a 30min auto-pause
+        int runningMin = 360;           // segmentStart was 360min ago (since before lunch)
+        PebbleStatus s = PebbleStatus.of(
+                true, 7, "Customer A", totalNet, 360, 1_000_000L, 1_000_000L + runningMin * 60,
+                450, 0, 0, 360);
+        assertThat(s.workedBeforeMin()).isEqualTo(-30);
+        // watch reconstruction: workedBefore + running == net worked total (lunch preserved)
+        assertThat(s.workedBeforeMin() + runningMin).isEqualTo(totalNet);
+    }
+
+    @Test
     public void notTracking_taskFieldsZeroed() {
         PebbleStatus s = PebbleStatus.of(false, 0, "", 90, 0, 0L, 1_000_000L, 450, 300, 1200, 95);
         assertThat(s.isTracking()).isFalse();
