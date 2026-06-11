@@ -43,6 +43,9 @@ public enum Key {
 
 	DECIMAL_TIME_SUMS("keyShowDecimalTimeAmounts", DataType.BOOLEAN, null, R.string.showDecimalTimeAmounts),
 
+	CSV_DECIMAL_SEPARATOR("keyCsvDecimalSeparator", DataType.ENUM_NAME, null, R.string.csvDecimalSeparator),
+	CSV_DECIMAL_PLACES("keyCsvDecimalPlaces", DataType.INTEGER, null, R.string.csvDecimalPlaces),
+
 	FLATTENING_ENABLED("keyFlatteningEnabled", DataType.BOOLEAN, null, R.string.flatteningEnabled),
 	SMALLEST_TIME_UNIT("keySmallestTimeUnit", DataType.INTEGER, FLATTENING_ENABLED, R.string.smallestTimeUnit),
 

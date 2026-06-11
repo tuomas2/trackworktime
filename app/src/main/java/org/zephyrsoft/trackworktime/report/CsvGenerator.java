@@ -16,8 +16,10 @@
 package org.zephyrsoft.trackworktime.report;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 
 import androidx.arch.core.util.Function;
+import androidx.preference.PreferenceManager;
 
 import org.pmw.tinylog.Logger;
 import org.supercsv.cellprocessor.CellProcessorAdaptor;
@@ -35,6 +37,7 @@ import org.zephyrsoft.trackworktime.model.TargetWrapper;
 import org.zephyrsoft.trackworktime.model.Task;
 import org.zephyrsoft.trackworktime.model.TimeSum;
 import org.zephyrsoft.trackworktime.model.TypeEnum;
+import org.zephyrsoft.trackworktime.options.Key;
 import org.zephyrsoft.trackworktime.util.DateTimeUtil;
 
 import java.io.IOException;
@@ -44,8 +47,10 @@ import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -54,12 +59,95 @@ import java.util.Map.Entry;
  */
 public class CsvGenerator {
 
+	/** header name of the additional column that shows the worked time as decimal hours */
+	private static final String SPENT_DECIMAL_HEADER = "spentHours";
+	private static final String DEFAULT_DECIMAL_SEPARATOR = ".";
+	private static final int DEFAULT_DECIMAL_PLACES = 2;
+
 	private final DAO dao;
 	private final Context context;
+	private final String decimalSeparator;
+	private final int decimalPlaces;
 
 	public CsvGenerator(DAO dao, Context context) {
+		this(dao, context, readDecimalSeparator(context), readDecimalPlaces(context));
+	}
+
+	/** Visible for testing: inject the decimal-hours formatting config directly (no Context needed). */
+	CsvGenerator(DAO dao, Context context, String decimalSeparator, int decimalPlaces) {
 		this.dao = dao;
 		this.context = context;
+		this.decimalSeparator = decimalSeparator;
+		this.decimalPlaces = Math.max(0, decimalPlaces);
+	}
+
+	private static String readDecimalSeparator(Context context) {
+		if (context == null) {
+			return DEFAULT_DECIMAL_SEPARATOR;
+		}
+		return PreferenceManager.getDefaultSharedPreferences(context)
+			.getString(Key.CSV_DECIMAL_SEPARATOR.getName(), DEFAULT_DECIMAL_SEPARATOR);
+	}
+
+	private static int readDecimalPlaces(Context context) {
+		if (context == null) {
+			return DEFAULT_DECIMAL_PLACES;
+		}
+		String value = PreferenceManager.getDefaultSharedPreferences(context)
+			.getString(Key.CSV_DECIMAL_PLACES.getName(), String.valueOf(DEFAULT_DECIMAL_PLACES));
+		try {
+			return Math.max(0, Integer.parseInt(value.trim()));
+		} catch (NumberFormatException e) {
+			return DEFAULT_DECIMAL_PLACES;
+		}
+	}
+
+	/** Formats a worked-time sum as decimal hours, honoring the configured separator and precision. */
+	private String formatDecimalHours(TimeSum timeSum) {
+		double hours = timeSum.getAsMinutes() / 60.0;
+		String formatted = String.format(Locale.US, "%." + decimalPlaces + "f", hours);
+		if (!DEFAULT_DECIMAL_SEPARATOR.equals(decimalSeparator)) {
+			formatted = formatted.replace(DEFAULT_DECIMAL_SEPARATOR, decimalSeparator);
+		}
+		return formatted;
+	}
+
+	/** Cell processor that renders a {@link TimeSum} as decimal hours for the extra column. */
+	private CellProcessor decimalHoursProcessor() {
+		return new CellProcessorAdaptor() {
+			@Override
+			public Object execute(Object arg0, CsvContext arg1) {
+				if (arg0 == null) {
+					throw new IllegalStateException("time sum may not be null");
+				} else {
+					return formatDecimalHours((TimeSum) arg0);
+				}
+			}
+		};
+	}
+
+	/** Appends the decimal-hours column to the display header. */
+	private static String[] withDecimalHeader(String[] header) {
+		String[] result = Arrays.copyOf(header, header.length + 1);
+		result[header.length] = SPENT_DECIMAL_HEADER;
+		return result;
+	}
+
+	/**
+	 * Builds the bean field mapping for the extra column by re-reading the "spent" property
+	 * (the last column of every worked-time report), so the decimal column reuses the same TimeSum.
+	 */
+	private static String[] withDecimalMapping(String[] header) {
+		String[] result = Arrays.copyOf(header, header.length + 1);
+		result[header.length] = header[header.length - 1];
+		return result;
+	}
+
+	/** Appends the decimal-hours cell processor to an existing processor array. */
+	private CellProcessor[] withDecimalProcessor(CellProcessor[] processors) {
+		CellProcessor[] result = Arrays.copyOf(processors, processors.length + 1);
+		result[processors.length] = decimalHoursProcessor();
+		return result;
 	}
 
 	/** time, type, task, text */
@@ -299,7 +387,7 @@ public class CsvGenerator {
 		}
 		Collections.sort(prepared);
 
-		return createCsv(prepared, new String[] { "task", "spent" }, getSumsProcessors());
+		return createWorkedTimeCsv(prepared, new String[] { "task", "spent" }, getSumsProcessors());
 	}
 
 	public String createSumsCsvWithHints(Map<TaskAndHint, TimeSum> sums) {
@@ -319,7 +407,7 @@ public class CsvGenerator {
 		}
 		Collections.sort(prepared);
 
-		return createCsv(prepared, new String[] { "task", "text", "spent" }, getSumsAndHintsProcessors());
+		return createWorkedTimeCsv(prepared, new String[] { "task", "text", "spent" }, getSumsAndHintsProcessors());
 	}
 
 	public <T> String createSumsPerDayCsv(Map<ZonedDateTime, Map<T, TimeSum>> sumsPerRange,
@@ -338,7 +426,7 @@ public class CsvGenerator {
 		}
 		Collections.sort(prepared);
 
-		return createCsv(prepared, new String[] { "day", "task", "spent" }, getSumsPerRangeProcessors());
+		return createWorkedTimeCsv(prepared, new String[] { "day", "task", "spent" }, getSumsPerRangeProcessors());
 	}
 
 	public String createSumsWithHintsPerDayCsv(Map<ZonedDateTime, Map<TaskAndHint, TimeSum>> sumsPerRange) {
@@ -362,7 +450,7 @@ public class CsvGenerator {
 		}
 		Collections.sort(prepared);
 
-		return createCsv(prepared, new String[] { "day", "task", "text", "spent" }, getSumsPerRangeWithHintsProcessors());
+		return createWorkedTimeCsv(prepared, new String[] { "day", "task", "text", "spent" }, getSumsPerRangeWithHintsProcessors());
 	}
 
 	public <T> String createSumsPerWeekCsv(Map<ZonedDateTime, Map<T, TimeSum>> sumsPerRange,
@@ -381,7 +469,7 @@ public class CsvGenerator {
 		}
 		Collections.sort(prepared);
 
-		return createCsv(prepared, header, getSumsPerRangeProcessors());
+		return createWorkedTimeCsv(prepared, header, getSumsPerRangeProcessors());
 	}
 
 	public String createSumsWithHintsPerWeeksCsv(Map<ZonedDateTime, Map<TaskAndHint, TimeSum>> sumsPerRange,
@@ -407,7 +495,7 @@ public class CsvGenerator {
 		}
 		Collections.sort(prepared);
 
-		return createCsv(prepared, header, getSumsPerRangeWithHintsProcessors());
+		return createWorkedTimeCsv(prepared, header, getSumsPerRangeWithHintsProcessors());
 	}
 
 	public String createDayCountPerWeekCsv(Map<ZonedDateTime, Map<String, Integer>> sumsPerRange, String[] header) {
@@ -440,7 +528,7 @@ public class CsvGenerator {
 		}
 		Collections.sort(prepared);
 
-		return createCsv(prepared, header, getSumsPerRangeProcessors());
+		return createWorkedTimeCsv(prepared, header, getSumsPerRangeProcessors());
 	}
 
 	public String createSumsWithHintsPerMonthCsv(Map<ZonedDateTime, Map<TaskAndHint, TimeSum>> sumsPerRange,
@@ -466,7 +554,7 @@ public class CsvGenerator {
 		}
 		Collections.sort(prepared);
 
-		return createCsv(prepared, header, getSumsPerRangeWithHintsProcessors());
+		return createWorkedTimeCsv(prepared, header, getSumsPerRangeWithHintsProcessors());
 	}
 
 	public String createDayCountPerMonthCsv(Map<ZonedDateTime, Map<String, Integer>> sumsPerRange, String[] header) {
@@ -483,11 +571,27 @@ public class CsvGenerator {
 		return createCsv(prepared, header, getSumsPerRangeProcessors());
 	}
 
+	private String createCsv(List<?> dataToWrite, String[] header, CellProcessor[] processors) {
+		return createCsv(dataToWrite, header, header, processors);
+	}
+
+	/**
+	 * Like {@link #createCsv}, but appends the decimal-hours column. {@code header} must end with the
+	 * "spent" (TimeSum) column, and {@code processors} must match {@code header}.
+	 */
+	private String createWorkedTimeCsv(List<?> dataToWrite, String[] header, CellProcessor[] processors) {
+		return createCsv(dataToWrite, withDecimalHeader(header), withDecimalMapping(header),
+			withDecimalProcessor(processors));
+	}
+
 	/**
 	 * @param header
-	 *            the header elements are used to map the bean values to each column (names must match!)
+	 *            the column labels written as the first CSV line
+	 * @param nameMapping
+	 *            the bean property names used to read each column value (names must match getters!);
+	 *            may differ from {@code header} when a column re-reads a property under a new label
 	 */
-	private String createCsv(List<?> dataToWrite, String[] header, CellProcessor[] processors) {
+	private String createCsv(List<?> dataToWrite, String[] header, String[] nameMapping, CellProcessor[] processors) {
 		ICsvBeanWriter beanWriter = null;
 		StringWriter resultWriter = new StringWriter();
 		try {
@@ -496,7 +600,7 @@ public class CsvGenerator {
 			beanWriter.writeHeader(header);
 
 			for (Object dataElement : dataToWrite) {
-				beanWriter.write(dataElement, header, processors);
+				beanWriter.write(dataElement, nameMapping, processors);
 			}
 		} catch (IOException e) {
 			Logger.error(e, "error while writing");

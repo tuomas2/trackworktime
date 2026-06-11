@@ -65,6 +65,70 @@ public class CsvGeneratorSumsTest {
 	}
 
 	@Test
+	public void createSumsCsvAddsDecimalHoursColumnByDefault() {
+		Map<Task, TimeSum> sums = new HashMap<>();
+		sums.put(new Task(7, "vrt foo", 1, 0, 0), timeSum(1, 30));
+
+		String csv = csvGenerator.createSumsCsv(sums, TASK_WITH_ID);
+
+		assertTrue(csv.contains("task;spent;spentHours"));
+		// 1:30 == 1.5 hours, default is a period separator with 2 decimals
+		assertTrue(csv.contains("vrt foo (ID=7);1:30;1.50"));
+	}
+
+	@Test
+	public void decimalHoursColumnRespectsConfiguredSeparator() {
+		CsvGenerator generator = new CsvGenerator(null, null, ",", 2);
+		Map<String, TimeSum> sums = new HashMap<>();
+		sums.put("vrt", timeSum(1, 30));
+
+		String csv = generator.createSumsCsv(sums, prefix -> prefix);
+
+		assertTrue(csv.contains("vrt;1:30;1,50"));
+	}
+
+	@Test
+	public void decimalHoursColumnRespectsConfiguredNumberOfPlaces() {
+		CsvGenerator generator = new CsvGenerator(null, null, ".", 4);
+		Map<String, TimeSum> sums = new HashMap<>();
+		// 0:20 == 0.3333... hours
+		sums.put("vrt", timeSum(0, 20));
+
+		String csv = generator.createSumsCsv(sums, prefix -> prefix);
+
+		assertTrue(csv.contains("vrt;0:20;0.3333"));
+	}
+
+	@Test
+	public void createSumsPerDayCsvAddsDecimalHoursColumn() {
+		ZonedDateTime day = ZonedDateTime.of(2026, 6, 9, 0, 0, 0, 0, ZoneId.of("Europe/Helsinki"));
+		Map<String, TimeSum> daySums = new HashMap<>();
+		daySums.put("vrt", timeSum(2, 0));
+		Map<ZonedDateTime, Map<String, TimeSum>> sumsPerRange = new HashMap<>();
+		sumsPerRange.put(day, daySums);
+
+		String csv = csvGenerator.createSumsPerDayCsv(sumsPerRange, prefix -> prefix);
+
+		assertTrue(csv.contains("day;task;spent;spentHours"));
+		assertTrue(csv.contains("2026-06-09;vrt;2:00;2.00"));
+	}
+
+	@Test
+	public void dayCountReportHasNoDecimalHoursColumn() {
+		ZonedDateTime week = ZonedDateTime.of(2026, 6, 8, 0, 0, 0, 0, ZoneId.of("Europe/Helsinki"));
+		Map<String, Integer> weekCounts = new HashMap<>();
+		weekCounts.put("flexi", 3);
+		Map<ZonedDateTime, Map<String, Integer>> sumsPerRange = new HashMap<>();
+		sumsPerRange.put(week, weekCounts);
+
+		String csv = csvGenerator.createDayCountPerWeekCsv(sumsPerRange,
+			new String[] { "week", "target", "days" });
+
+		assertTrue(csv.contains("week;target;days"));
+		assertFalse(csv.contains("spentHours"));
+	}
+
+	@Test
 	public void createSumsCsvHandlesNullKey() {
 		Map<Task, TimeSum> sums = new HashMap<>();
 		sums.put(null, timeSum(0, 30));

@@ -66,5 +66,8 @@
     <string name="keyNightMode">keyNightMode</string>
     <string name="keyTaskSortByLastUsed">keyTaskSortByLastUsed</string>
     <string name="keyDefaultTaskLastUsed">keyDefaultTaskLastUsed</string>
+    <string name="keyCsvReportCategory">keyCsvReportCategory</string>
+    <string name="keyCsvDecimalSeparator">keyCsvDecimalSeparator</string>
+    <string name="keyCsvDecimalPlaces">keyCsvDecimalPlaces</string>
 
 </resources>

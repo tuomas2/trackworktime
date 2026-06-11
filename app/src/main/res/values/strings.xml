@@ -356,4 +356,18 @@
     <string name="taskSortByLastUsed">Sort by last used</string>
     <string name="taskSortAlphabetically">Sort alphabetically</string>
     <string name="taskSortToggleDescription">Toggle task sorting</string>
+
+    <string name="csvReport">CSV report</string>
+    <string name="csvDecimalSeparator">Decimal separator</string>
+    <string name="csvDecimalSeparatorDescription">character used between the integer and fractional part of the decimal-hours column in CSV reports</string>
+    <string name="csvDecimalPlaces">Decimal places</string>
+    <string name="csvDecimalPlacesDescription">number of digits after the decimal separator in the decimal-hours column (e.g. 2)</string>
+    <string-array name="csvDecimalSeparators">
+        <item>Period (.)</item>
+        <item>Comma (,)</item>
+    </string-array>
+    <string-array name="csvDecimalSeparatorValues">
+        <item>.</item>
+        <item>,</item>
+    </string-array>
 </resources>
