@@ -356,10 +356,30 @@ public class TimerManager {
 	 * the week and also if this is the last day in the working week.
 	 */
 	public Integer getMinutesRemaining() {
-		boolean toZeroEveryDay = preferences.getBoolean(Key.FLEXI_TIME_TO_ZERO_ON_EVERY_DAY.getName(),
-			false);
 		OffsetDateTime dateTime = OffsetDateTime.now();
 		DayOfWeek weekDay = dateTime.getDayOfWeek();
+
+		if (!preferences.getBoolean(Key.ENABLE_FLEXI_TIME.getName(), false)) {
+			// Flexi time off: there are no per-day Flexi work-day toggles or carried balance, so the
+			// weekly-balance branch below would never fire (isWorkDay() is always false) and the
+			// estimate would be hidden. Fall back to the simple fixed daily target, mirroring how
+			// the watchface computes "remaining" (getDailyWorkTimeTarget - worked today).
+			int target = getDailyWorkTimeTarget(weekDay);
+			if (target <= 0) {
+				// No usable target -> no meaningful end-of-day estimate.
+				return null;
+			}
+			int minutesRemaining = target - (int) calculateTimeSum(dateTime.toLocalDate(), PeriodEnum.DAY);
+			if (isAutoPauseEnabled() && isAutoPauseTheoreticallyApplicable(dateTime)
+					&& !isAutoPauseApplicable(dateTime)) {
+				// auto-pause will still be deducted later, so it lengthens the time left to work
+				minutesRemaining += getAutoPauseDuration();
+			}
+			return minutesRemaining;
+		}
+
+		boolean toZeroEveryDay = preferences.getBoolean(Key.FLEXI_TIME_TO_ZERO_ON_EVERY_DAY.getName(),
+			false);
 		if (isWorkDay(weekDay)) {
 			int minutesRemaining = 0;
 			Logger.debug("isAutoPauseEnabled={}", isAutoPauseEnabled());

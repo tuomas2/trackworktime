@@ -16,6 +16,7 @@
 package org.zephyrsoft.trackworktime.timer;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -85,5 +86,43 @@ public class TimerManagerTest {
         TimerManager tm = new TimerManager(mock(DAO.class), prefs, null);
 
         assertThat(tm.getDailyWorkTimeTarget(DayOfWeek.SUNDAY)).isEqualTo(0);
+    }
+
+    /**
+     * getMinutesRemaining() is the "minutes still to work today" estimate the watch turns into an
+     * end-of-workday clock time. Its weekly-balance computation is gated behind Flexi work-day
+     * toggles (FLEXI_TIME_DAY_*), so with Flexi DISABLED it used to always return null and the
+     * watch estimate vanished for fixed-daily-target users. With Flexi off it must fall back to
+     * (explicit per-day target − time worked today): 7:30 target, nothing worked yet -> 450.
+     */
+    @Test
+    public void minutesRemaining_fixedDailyTargetFallbackWhenFlexiDisabled() {
+        SharedPreferences prefs = mock(SharedPreferences.class);
+        when(prefs.getBoolean(eq(Key.ENABLE_FLEXI_TIME.getName()), anyBoolean())).thenReturn(false);
+        when(prefs.getString(eq(Key.FLEXI_TIME_RESET_INTERVAL.getName()), anyString()))
+                .thenReturn("NONE");
+        when(prefs.getString(eq(Key.WORK_TIME_TARGET_PER_DAY.getName()), anyString()))
+                .thenReturn("7:30");
+        // no events -> nothing worked today; auto-pause pref defaults to false in the mock
+        TimerManager tm = new TimerManager(mock(DAO.class), prefs, null);
+
+        assertThat(tm.getMinutesRemaining()).isEqualTo(450);
+    }
+
+    /**
+     * With Flexi off and no usable target (explicit 0:00, no weekly-derived value), there is no
+     * meaningful end-of-day estimate, so the watch must keep hiding it -> null (not "+overtime").
+     */
+    @Test
+    public void minutesRemaining_nullWhenFlexiDisabledAndNoTarget() {
+        SharedPreferences prefs = mock(SharedPreferences.class);
+        when(prefs.getBoolean(eq(Key.ENABLE_FLEXI_TIME.getName()), anyBoolean())).thenReturn(false);
+        when(prefs.getString(eq(Key.FLEXI_TIME_RESET_INTERVAL.getName()), anyString()))
+                .thenReturn("NONE");
+        when(prefs.getString(eq(Key.WORK_TIME_TARGET_PER_DAY.getName()), anyString()))
+                .thenReturn("0:00");
+        TimerManager tm = new TimerManager(mock(DAO.class), prefs, null);
+
+        assertThat(tm.getMinutesRemaining()).isNull();
     }
 }
