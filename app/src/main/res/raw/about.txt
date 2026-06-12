@@ -3,6 +3,8 @@
 
 Version {1}<br>
 <br>
-Feedback (in English or German):<br>
+Feedback (in English):<br>
 {2}<br>
+<br>
+Based on <a href="https://codeberg.org/mathisdt/trackworktime">Track Work Time</a> by ZephyrSoft (Mathis Dirksen-Thedens), licensed under GPLv3.<br>
 <br>

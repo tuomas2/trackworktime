@@ -1,4 +1,4 @@
-# Track Work Time
+# Sykerö Track Work Time
 
 > **Fork notice:** This is a fork of [mathisdt/trackworktime](https://codeberg.org/mathisdt/trackworktime),
 > maintained by Sykerö Software. It adds a Pebble companion integration (PebbleKit
@@ -90,19 +90,11 @@ If the app crashes, it will offer you to send some information about the crash c
 places in the bug report, but the general log file is appended and might potentially include personal data -
 if so, it will be kept strictly confidential and only used to identify the problem.
 
-[<img src="https://zephyrsoft.org/wp-content/uploads/get-it-on-fdroid.png"
-     alt="Get it on F-Droid"
-     height="54px">](https://f-droid.org/packages/org.zephyrsoft.trackworktime/)
-[<img src="https://zephyrsoft.org/wp-content/uploads/get-it-on-google-play.png"
-     alt="Get it on Google Play"
-     height="54px">](https://play.google.com/store/apps/details?id=org.zephyrsoft.trackworktime)
-
-You can track the past development by looking at the [version history](https://zephyrsoft.org/trackworktime/history).  
+You can track the past development by looking at the [commit history](https://github.com/Sykero-Software/trackworktime/commits/).  
   
 **This is an open source project**, so if there's something you don't like, you are very welcome to
-[file an issue](https://codeberg.org/mathisdt/trackworktime/issues) or even fix things yourself and create a pull request.
-Please don't try to communicate with me via reviews, that doesn't work in both directions.
-You can always [write me an email](https://zephyrsoft.org/contact-about-me) and I'll see what I can do.
+[file an issue](https://github.com/Sykero-Software/trackworktime/issues) or even fix things yourself and create a pull request.
+You can always [write us an email](mailto:trackworktime@sykero.fi) and we'll see what we can do.
 
 ## License
 
