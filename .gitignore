@@ -5,3 +5,18 @@ local.properties
 .DS_Store
 build
 /captures
+
+# Signing secrets — only the GPG-encrypted form is ever committed.
+*.jks
+*.keystore
+keystore.properties
+/keys/
+
+# Fastlane
+/.env
+/fastlane/report.xml
+/fastlane/README.md
+# Decrypted service-account JSON must never land on disk — catch-all in case
+# something accidentally writes it. The encrypted .gpg form stays tracked.
+/fastlane/*.json
+!/fastlane/*.json.gpg
