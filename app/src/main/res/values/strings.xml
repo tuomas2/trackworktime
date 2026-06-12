@@ -3,7 +3,7 @@
     <string name="app_title_short">TWT</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
-    <string name="email">android@zephyrsoft.org</string>
+    <string name="email">trackworktime@sykero.fi</string>
     <string name="in">IN</string>
     <string name="onespace">" "</string>
     <string name="out">OUT</string>
@@ -197,7 +197,7 @@
     <string name="standardChannelDescription">The category used for standard notifications of Track Work Time.</string>
     <string name="serviceChannelName">Service Notifications</string>
     <string name="serviceChannelDescription">The category used for service notifications of Track Work Time.</string>
-    <string name="sendLogsQuestion">You are about to send the logs of everything that happened today in Track Work Time to the developer.\n\nThe logs may contain personal data - if so, it will kept strictly confidential and only used to identify the problem.\n\nYou are also welcome to send the data to yourself first, check it, anonymize it where necessary and then forward it to android@zephyrsoft.org!</string>
+    <string name="sendLogsQuestion">You are about to send the logs of everything that happened today in Track Work Time to the developer.\n\nThe logs may contain personal data - if so, it will kept strictly confidential and only used to identify the problem.\n\nYou are also welcome to send the data to yourself first, check it, anonymize it where necessary and then forward it to trackworktime@sykero.fi!</string>
     <string name="sendLogsSubject">Logs from Track Work Time</string>
     <string name="exportLogs">Export Logs</string>
     <string name="sendLogs">Send Logs</string>

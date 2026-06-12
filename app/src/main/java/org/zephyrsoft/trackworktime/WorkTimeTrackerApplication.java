@@ -39,9 +39,8 @@ import android.os.Build;
 import org.acra.ACRA;
 import org.acra.config.CoreConfigurationBuilder;
 import org.acra.config.DialogConfigurationBuilder;
-import org.acra.config.HttpSenderConfigurationBuilder;
+import org.acra.config.MailSenderConfigurationBuilder;
 import org.acra.data.StringFormat;
-import org.acra.sender.HttpSender;
 import org.pmw.tinylog.Logger;
 import org.zephyrsoft.trackworktime.util.TinylogAndLogcatLogger;
 
@@ -93,9 +92,9 @@ public class WorkTimeTrackerApplication extends Application {
                     .withCommentPrompt(getString(R.string.acraCommentPrompt))
                     .withEnabled(true)
                     .build(),
-                new HttpSenderConfigurationBuilder()
-                    .withHttpMethod(HttpSender.Method.POST)
-                    .withUri("https://crashreport.zephyrsoft.org/")
+                new MailSenderConfigurationBuilder()
+                    .withMailTo("bugs.trackworktime@sykero.fi")
+                    .withReportAsFile(true)
                     .withEnabled(true)
                     .build());
 

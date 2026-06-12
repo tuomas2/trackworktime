@@ -18,7 +18,7 @@
 
     <application
         android:name=".WorkTimeTrackerApplication"
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:backupAgent=".backup.WorkTimeTrackerBackupAgentHelper"
         android:hasCode="true"
         android:icon="@mipmap/ic_launcher"
@@ -41,9 +41,8 @@
                 android:resource="@xml/widget_info" />
         </receiver>
 
-        <meta-data
-            android:name="com.google.android.backup.api_key"
-            android:value="AEdPqrEAAAAIWuqWwAhfQ8Ygb9ZqAPzmXYh_WdSTh3Hjqm8hmg" />
+        <!-- Google Backup disabled for now (allowBackup=false above); the original
+             publisher's api_key was removed. Re-add our own key to re-enable. -->
 
         <provider
             android:name=".util.GenericFileProvider"

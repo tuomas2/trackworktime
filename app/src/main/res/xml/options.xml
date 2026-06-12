@@ -216,6 +216,8 @@
             android:summary="@string/neverUpdatePersistentNotificationDescription"
             android:title="@string/neverUpdatePersistentNotification" />
     </PreferenceCategory>
+    <!-- Google backup hidden for now (allowBackup=false; original publisher's
+         api_key removed). Code kept; re-show + add our own key to re-enable.
     <PreferenceCategory
         android:key="@string/keyBackupCategory"
         android:title="@string/backup_to_google" >
@@ -235,6 +237,7 @@
             android:summary="-"
             android:title="@string/lastBackupTimestamp" />
     </PreferenceCategory>
+    -->
     <PreferenceCategory
         android:key="@string/keyAppearanceCategory"
         android:title="@string/appearance">
