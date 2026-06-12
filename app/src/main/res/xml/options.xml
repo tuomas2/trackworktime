@@ -203,6 +203,14 @@
             android:title="@string/flexiTimeToZeroOnEveryDay"
             android:summary="@string/flexiTimeToZeroOnEveryDayDescription" />
         <CheckBoxPreference
+            android:key="@string/keyNeverUpdatePersistentNotification"
+            android:summary="@string/neverUpdatePersistentNotificationDescription"
+            android:title="@string/neverUpdatePersistentNotification" />
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:key="@string/keyPebbleCategory"
+        android:title="@string/pebbleWatch" >
+        <CheckBoxPreference
             android:key="@string/keyPebbleStatus"
             android:title="@string/pebbleStatus"
             android:summary="@string/pebbleStatusSummary"
@@ -211,10 +219,6 @@
             android:key="@string/keyWorkTimeTargetPerDay"
             android:title="@string/workTimeTargetPerDay"
             android:summary="@string/workTimeTargetPerDayDescription" />
-        <CheckBoxPreference
-            android:key="@string/keyNeverUpdatePersistentNotification"
-            android:summary="@string/neverUpdatePersistentNotificationDescription"
-            android:title="@string/neverUpdatePersistentNotification" />
     </PreferenceCategory>
     <!-- Google backup hidden for now (allowBackup=false; original publisher's
          api_key removed). Code kept; re-show + add our own key to re-enable.

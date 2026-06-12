@@ -38,6 +38,7 @@
     <string name="keyAutoPauseBegin">keyAutoPauseBegin</string>
     <string name="keyAutoPauseEnd">keyAutoPauseEnd</string>
     <string name="keyNotificationCategory">keyNotificationCategory</string>
+    <string name="keyPebbleCategory">keyPebbleCategory</string>
     <string name="keyNotificationEnabled">keyNotificationEnabled</string>
     <string name="keyNotificationAlways">keyNotificationAlways</string>
     <string name="keyNotificationNonPersistent">keyNotificationNonPersistent</string>
