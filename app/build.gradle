@@ -1,4 +1,6 @@
 import java.text.SimpleDateFormat
+import java.io.ByteArrayInputStream
+import java.util.Properties
 
 apply plugin: 'com.android.application'
 
@@ -6,6 +8,32 @@ static def buildTime() {
     def df = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss")
     df.setTimeZone(TimeZone.getTimeZone("Europe/Berlin"))
     return df.format(new Date())
+}
+
+// Release signing secrets live ONLY inside keystore.properties.gpg, which is
+// committed (encrypted to the developer's GPG key). We decrypt inline into an
+// in-memory Properties object; the plaintext never touches disk. Decryption is
+// skipped unless a task that actually needs release signing has been requested —
+// this avoids spurious YubiKey prompts on routine debug builds.
+def keystoreGpgFile = rootProject.file('keystore.properties.gpg')
+
+def wantsReleaseSigning = gradle.startParameter.taskNames.any { name ->
+    def n = name.toLowerCase()
+    n.contains('release') && !n.contains('unittest')
+}
+
+def keystoreProperties = new Properties()
+if (wantsReleaseSigning && keystoreGpgFile.exists()) {
+    def process = new ProcessBuilder('gpg', '--decrypt', '--quiet', keystoreGpgFile.absolutePath)
+            .redirectErrorStream(false)
+            .start()
+    def decrypted = process.inputStream.bytes
+    def exitCode = process.waitFor()
+    if (exitCode != 0) {
+        def stderr = process.errorStream.text
+        throw new GradleException("gpg --decrypt failed (exit ${exitCode}): ${stderr}")
+    }
+    keystoreProperties.load(new ByteArrayInputStream(decrypted))
 }
 
 android {
@@ -39,7 +67,7 @@ android {
         }
 
         versionCode 72                      // increment after every release (for the next development cycle)
-        versionName '1.1.27-SNAPSHOT'       // change with every release
+        versionName '1.2.72'                // = MAJOR.MINOR.versionCode; bump via scripts/increment-version.sh
 
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 
@@ -55,12 +83,27 @@ android {
         buildConfig = true
     }
 
+    signingConfigs {
+        release {
+            def storeFilePath = keystoreProperties.getProperty('storeFile')
+            if (storeFilePath != null) {
+                storeFile file(storeFilePath)
+                storePassword keystoreProperties.getProperty('storePassword')
+                keyAlias keystoreProperties.getProperty('keyAlias')
+                keyPassword keystoreProperties.getProperty('keyPassword')
+            }
+        }
+    }
+
     buildTypes {
         release {
             postprocessing {
                 removeUnusedCode = false
                 obfuscate = false
                 optimizeCode = false
+            }
+            if (keystoreProperties.getProperty('storeFile') != null) {
+                signingConfig signingConfigs.release
             }
         }
     }
