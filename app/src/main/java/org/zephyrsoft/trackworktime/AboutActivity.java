@@ -18,7 +18,7 @@ package org.zephyrsoft.trackworktime;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Html;
-import android.text.util.Linkify;
+import android.text.method.LinkMovementMethod;
 import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
@@ -55,11 +55,11 @@ public class AboutActivity extends AppCompatActivity {
 		aboutText = MessageFormat.format(aboutText, name, version, email);
 		binding.aboutText.setText(Html.fromHtml(aboutText));
 		binding.aboutText.setLinkTextColor(Color.WHITE);
-		Linkify.addLinks(binding.aboutText, Linkify.WEB_URLS | Linkify.EMAIL_ADDRESSES);
+		binding.aboutText.setMovementMethod(LinkMovementMethod.getInstance());
 
 		binding.helpText.setText(Html.fromHtml(readRawTextFile(R.raw.help)));
 		binding.helpText.setLinkTextColor(Color.WHITE);
-		Linkify.addLinks(binding.helpText, Linkify.WEB_URLS | Linkify.EMAIL_ADDRESSES);
+		binding.helpText.setMovementMethod(LinkMovementMethod.getInstance());
 	}
 
 	@Override
