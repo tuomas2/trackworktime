@@ -22,7 +22,7 @@ import java.util.Map;
 /** Builds and sends the current status + recent-task list to the TWT Control watchapp. */
 public final class TwtControlSender {
 
-    private static final int MAX_TASKS = 7;
+    private static final int MAX_TASKS = 25;
 
     private final Context context;
     private final TimerManager timerManager;
