@@ -23,6 +23,6 @@ Privacy first
 • Optional crash reports go only through your own email app, and only if you agree each time
 
 Open source
-Licensed under GPLv3 — contributions welcome.
+Licensed under GPLv3.
 Source: https://github.com/Sykero-Software/trackworktime
 Original: Track Work Time by ZephyrSoft (Mathis Dirksen-Thedens)
