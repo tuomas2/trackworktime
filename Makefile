@@ -1,8 +1,15 @@
 AAB := app/build/outputs/bundle/release/app-release.aab
 
 # Studio JBR (JDK 21) — required for PebbleKit Android 2 (Java-21 bytecode); the
-# default shell uses corretto-17. Override if your JBR lives elsewhere.
-JAVA_HOME ?= /opt/jetbrains-toolbox/apps/android-studio/jbr
+# default shell uses corretto-17. Auto-detected across environments: the gie
+# sandbox mounts JetBrains Toolbox at /opt/jetbrains-toolbox, while on the host it
+# lives under ~/.local/share/JetBrains/Toolbox. The first existing path below wins;
+# an exported JAVA_HOME or `make … JAVA_HOME=/path` overrides it.
+JAVA_HOME ?= $(firstword $(wildcard \
+    /opt/jetbrains-toolbox/apps/android-studio/jbr \
+    $(HOME)/.local/share/JetBrains/Toolbox/apps/android-studio/jbr \
+    /usr/lib/jvm/java-21-openjdk-amd64 \
+    /usr/lib/jvm/java-21-openjdk))
 
 # Current versionCode parsed from app/build.gradle so promote/upload don't need it
 # passed in. Override with `VERSION=<n>` to act on a different build.
