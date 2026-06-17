@@ -279,6 +279,12 @@ public class WorkTimeTrackerActivity extends AppCompatActivity
 		// check options for logical errors
 		checkAllOptions();
 
+		// Google backup first-run prompt hidden for now — backup is disabled
+		// (allowBackup=false in the manifest; the backup category in xml/options.xml
+		// is likewise commented out). The dialog was dead anyway: with
+		// allowBackup=false nothing is backed up even if the user taps Yes. Re-show
+		// this together with re-enabling backup there.
+		/*
 		boolean playServicesAvailable = false;
 		try {
 			PackageInfo info = getPackageManager().getPackageInfo("com.google.android.gms", 0);
@@ -308,6 +314,7 @@ public class WorkTimeTrackerActivity extends AppCompatActivity
 					.setPositiveButton(R.string.yes, dialogClickListener)
 					.setNegativeButton(R.string.no, dialogClickListener).show();
 		}
+		*/
 
 		int nightMode = Integer.parseInt(preferences.getString(getString(R.string.keyNightMode), "2"));
 		setDefaultNightMode(nightMode);
