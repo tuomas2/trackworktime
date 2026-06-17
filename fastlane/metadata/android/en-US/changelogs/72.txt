@@ -1,0 +1,4 @@
+• First release of Sykerö Track Work Time
+• Track work time manually, or automatically via location and Wi-Fi
+• Categorize time by client/task, generate CSV reports, keep a flexible-time account
+• Pebble watch support: start/stop tracking and pick a task from your wrist, see your status on the TimeStyle watchface
