@@ -1,0 +1,26 @@
+• Pebble watchapp integration with PebbleKit Android 2 for two-way communication (start/stop tracking, task list sync)
+• Per-task work time budgets displayed on watch with percentage completion
+• Dedicated daily work-time target for watch (replaces fallback to weekly target)
+• Send up to 25 recent tasks to TWT Control watchapp (was 7) + live status push on every tracking change
+• Decimal hours column in CSV reports with configurable separator and precision
+• Filterable task selection with sorting by last-used or alphabetical order
+• "Last used task as default" preference (auto-select most recent task on clock-in)
+• Task prefix grouping for reports (combine rows with same first word)
+• Quick settings tile for quick clock in/out without opening app
+• Launcher shortcuts for clock in/out
+• Period insertion UI (clock in/out as a single operation)
+• Week navigation popup (jump to any date from week view)
+• Notification options: always show while clocked in, non-persistent mode, silent mode
+• Automatic backup every 24 hours as safety measure
+• Broadcast intents on event create/update/delete for external app integration
+• Dark/light theme selection + themed adaptive icons
+• Material Design widget for Android 12+
+• End-of-workday estimate on watch for fixed daily targets (non-Flexi users)
+• Deduct today's auto-pause from per-task times on watch (accurate task percentages)
+• About/Help screen redesign with direct links to GitHub, sykero.fi, and feedback email
+• Better timezone and DST handling throughout the app
+• Improved permission request flow for Android 10+ with Storage Access Framework
+• Fix character encoding in app title (Sykerö no longer displays as "SykerÃ¶")
+• Fix horizontal overflow in About/Help layout
+• Don't prompt to activate Google backup on first run when disabled in manifest
+• Fix backup/restore with multi-line event comments
