@@ -1,1 +1,1 @@
-Record your work time. Categorize it with different tasks. Generate reports.
+Work-time tracker with Pebble watch support, tasks, reports & auto clock-in.

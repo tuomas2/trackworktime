@@ -1,104 +1,45 @@
 # Sykerö Track Work Time
 
 > **Fork notice:** This is a fork of [mathisdt/trackworktime](https://codeberg.org/mathisdt/trackworktime),
-> maintained by Sykerö Software. It adds a Pebble companion integration (PebbleKit
-> Android 2): start/stop tracking and a task list to/from the watch via the
-> [Sykerö Track Work Time](https://github.com/Sykero-Software/PebbleTrackWorkTime)
-> watchapp, plus a status push to the
-> [Sykerö TimeStyle](https://github.com/Sykero-Software/TimeStylePebble) watchface.
-> All credit for the original app goes to the upstream author.
-  
-This app can track your work time easily! You can automate time tracking using geo-fencing functions (see below).
-You may also **categorize each recorded interval** by a predefined client/task and a free text.
-Of course, the list of clients/tasks can be edited to suit your needs, and the app has a widget for your home screen.
-  
-Additionally, if you wish, your **flexible time account is taken care of**: you always see how much you worked.
-You can also keep an eye on how much work time is left for today or for the current week (by a **notification**
-which you can enable).
-  
-The app enables you to modify the planned working time effortlessly - just tap on the date you want to edit in the
-main table.
+> maintained by Sykerö Software. It adds first-class Pebble smartwatch support
+> (PebbleKit Android 2). All credit for the original app goes to the upstream author.
 
-You may provide the **geo-coordinates** or the **Wi-Fi network name** of your work place and the app can
-**automatically clock you in** while you are at work. This is done **without using GPS**, so your battery won't
-be emptied by this app. (You don't have to be connected to the WiFi network at work, it just has to be visible.)
+Track your work time the easy way — and control it right from your Pebble watch.
 
-You don't want to open the app for clocking in and out? No problem - there are at least three ways to do that:
-add the **widget** to your home screen, use **launcher shortcuts** (long press the app icon for that) or
-add a new **quick settings tile** to your panel by tapping on the pencil below and dragging the "Track Work Time"
-tile up which then can toggle your clocked-in state.
+## Pebble support (the highlight of this fork)
 
-If you prefer to use other apps like LlamaLab Automate or Tasker for tracking your movements, that's fine - **TWT can
-be triggered from other apps** and just do the book-keeping of your work time. In this case, you have to create
-broadcast intents with the action *org.zephyrsoft.trackworktime.ClockIn* or *org.zephyrsoft.trackworktime.ClockOut*.
-When using ClockIn, you can also set the parameters *task=...* and *text=...* in the "extra" section of
-the intent so your events are more meaningful. Here are some screenshots to point out how it can be done in Automate:
-[Flow overview](https://zephyrsoft.org/images/automate-1.png),
-["Broadcast send" block arguments](https://zephyrsoft.org/images/automate-2.png).
-You can also use the action *org.zephyrsoft.trackworktime.StatusRequest* to get the current state of TWT:
-is the user clocked in, and if so, with which task and how much time remains for today?
-Here's how you can use this in Automate:
-[Flow overview](https://zephyrsoft.org/images/automate-3.png),
-["Send broadcast" settings top](https://zephyrsoft.org/images/automate-4.png),
-["Send broadcast" settings bottom](https://zephyrsoft.org/images/automate-5.png),
-["Receive broadcast" settings top](https://zephyrsoft.org/images/automate-6.png),
-["Receive broadcast" settings bottom](https://zephyrsoft.org/images/automate-7.png),
-["Dialog message" settings](https://zephyrsoft.org/images/automate-8.png),
-[resulting message](https://zephyrsoft.org/images/automate-9.png).
+- Start and stop tracking, and pick a task, right from your wrist
+- See your status — current task, time worked, time left today — on the
+  [Sykerö TimeStyle](https://github.com/Sykero-Software/TimeStylePebble) watchface
+- Companion [Track Work Time](https://github.com/Sykero-Software/PebbleTrackWorkTime)
+  watchapp + the Sykerö TimeStyle watchface, both on the Pebble appstore
 
-It's also possible the other way around: **TWT generates broadcast intents on event creation/update/deletion**.
-Automation apps can listen for the actions *org.zephyrsoft.trackworktime.event.Created*,
-*org.zephyrsoft.trackworktime.event.Updated* and *org.zephyrsoft.trackworktime.event.Deleted*.  
-There are the following extras available: id (number uniquely identifying an event),
-date (the event's date, formatted YYYY-MM-DD), time (the event's time, formatted HH\:MM\:SS),
-timezone_offset (offset in standard format, e.g. +02:00),
-timezone_offset_minutes (offset in minutes, e.g. 120),
-type_id (number uniquely identifying the event's type, 0=clock-out / 1=clock-in),
-type (name of the event's type, CLOCK_IN or CLOCK_OUT),
-task_id (number uniquely identifying the event's task, not available on clock-out events),
-task (name of the event's task, not available on clock-out events),
-comment (only available if the user provided it),
-source (where the event was generated originally, possible values are
-MAIN_SCREEN_BUTTON, EVENT_LIST, QUICK_SETTINGS, LAUNCHER_SHORTCUT, MULTI_INSERT, AUTO_PAUSE,
-LOCATION, WIFI, RECEIVED_INTENT [includes both externally created broadcasts and actions from TWT's own widget and notification]).  
-Some screenshots so you can see it in action in Automate:
-[Flow overview](https://zephyrsoft.org/images/automate-receive-1.png),
-["Receive Broadcast" settings top](https://zephyrsoft.org/images/automate-receive-2.png),
-["Receive Broadcast" settings bottom](https://zephyrsoft.org/images/automate-receive-3.png),
-["Dialog Message" settings](https://zephyrsoft.org/images/automate-receive-4.png),
-[Result 1](https://zephyrsoft.org/images/automate-receive-5.png),
-[Result 2](https://zephyrsoft.org/images/automate-receive-6.png).
+## Key features
 
-If you have a **Pebble** smart watch, the app can notify you on clock-in and clock-out events which is especially
-useful if you want to be in the know about automatic time tracking via location and/or WiFi.
+- Manual or automatic clock-in/out — by location geo-fencing (no GPS, battery-friendly)
+  or by your workplace Wi-Fi network name (the network just has to be visible)
+- Categorize each interval by client/task plus free text; edit the task list to suit you
+- Flexible-time account: always see how much you've worked, and how much is left for
+  today or this week
+- Quick clock-in/out: home-screen widget, launcher shortcuts, or a Quick Settings tile
+- Edit planned working time with a tap on any date
+- Automatic daily backups to a folder you choose
+- Reports: raw events for export, or year/month/week summaries (optional decimal-hours column)
+- Automation-friendly: trigger tracking from Tasker or Automate via broadcast intents
+  (`org.zephyrsoft.trackworktime.ClockIn` / `ClockOut` / `StatusRequest`), and listen for
+  `…event.Created` / `Updated` / `Deleted` broadcasts
 
-For **other smart watches** you can enable some options regarding notifications to help you.
-Firstly, you can enable the notification generally. Without any other related option, this will only display
-a notification on your phone in case you're clocked in. To also display this notification on your phone
-when not clocked in, select to always show it. Now, if you want it also on your watch, you also have to switch
-notifications to non-persistent (otherwise Android won't synchronize them). This is kind of a compromise because
-with this option notifications won't be pinned at the top of the list and also can be closed unintentionally
-(but will be displayed again after a minute). In addition you can silence all notifications so you are
-not distracted by them (this will be applied on your watch as well as on your phone, Android doesn't
-differentiate here).
+## Privacy
 
-Finally, the app can generate **reports** for you. The raw events report is the right thing if you want to
-import your data somewhere else, while year/month/week reports are fine if you want to keep track of your
-task progress.
+**This app won't use your personal data for anything you don't want.** No ads, no tracking.
+If the app crashes it can offer to email a crash report to the developer — only if you agree,
+every time. Tracked times and places are never included in the report.
 
-Important note: **This app definitely won't use your personal data for anything you don't want!**
-If the app crashes, it will offer you to send some information about the crash circumstances to the developer
-(and does that only if you agree, you will be asked every time). The app does NOT include tracked times or
-places in the bug report, but the general log file is appended and might potentially include personal data -
-if so, it will be kept strictly confidential and only used to identify the problem.
+## Feedback
 
-You can track the past development by looking at the [commit history](https://github.com/Sykero-Software/trackworktime/commits/).  
-  
-**This is an open source project**, so if there's something you don't like, you are very welcome to
-[file an issue](https://github.com/Sykero-Software/trackworktime/issues) or even fix things yourself and create a pull request.
-You can always [write us an email](mailto:trackworktime@sykero.fi) and we'll see what we can do.
+[File an issue](https://github.com/Sykero-Software/trackworktime/issues) or
+[email us](mailto:trackworktime@sykero.fi).
 
 ## License
 
-This project is licensed under GPL v3. If you submit or contribute changes, these are automatically licensed
-under GPL v3 as well. If you don't want that, please don't submit the contribution (e.g. pull request)!
+GPL v3. If you submit changes, they are automatically licensed under GPL v3 as well.
