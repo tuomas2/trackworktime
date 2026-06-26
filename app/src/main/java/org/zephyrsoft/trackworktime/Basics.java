@@ -845,7 +845,7 @@ public class Basics {
         Notification.Builder notificationBuilder = new Notification.Builder(context)
             .setContentTitle(context.getString(R.string.serviceNotificationTitle))
             .setContentIntent(pendingIntent)
-            .setSmallIcon(R.drawable.ic_menu_mylocation)
+            .setSmallIcon(R.drawable.ic_notification)
             .setOngoing(true)
             .setPriority(Notification.PRIORITY_LOW)
             .setSortKey("B is second");

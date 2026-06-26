@@ -1,0 +1,36 @@
+<!--
+  Status-bar / notification / quick-settings-tile icon.
+
+  A white silhouette built 1:1 from the launcher icon's monochrome layer
+  (res/drawable/ic_launcher_foreground_monochrome.xml — the briefcase + clock of
+  the redesigned "Sykerö professor" app icon), re-scaled to fill the icon bounds
+  (the adaptive-icon safe-zone padding of that layer renders far too small here).
+
+  Two of the monochrome paths are used: the briefcase outline (which embeds the
+  clock-face circle as a sub-path) plus the clock hand. fillType="evenOdd" turns
+  the embedded circle into a cut-out so the clock reads as a face with a hand,
+  rather than merging into a solid briefcase (the "Track Work Time" identity).
+
+  Android renders small icons by their alpha mask and tints them, so a
+  single-colour silhouette is required; the full-colour launcher icon cannot be
+  used directly. Keep this in sync with the launcher monochrome layer if the app
+  icon is redesigned again.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+  <group android:scaleX="0.9907"
+      android:scaleY="0.9907"
+      android:translateX="-1.69"
+      android:translateY="10.76">
+    <path
+        android:fillType="evenOdd"
+        android:fillColor="#FFFFFF"
+        android:pathData="M229.34,63.1L222.15,64.87C193.66,71.86 179.36,90.25 178.27,121.33L177.81,134.34L138.31,134.63L98.81,134.92L93,136.84C74.58,142.92 61.73,154.95 55.72,171.74L53.18,178.83L53.18,283.35L53.18,387.88L55.72,394.97C62.68,414.4 80.49,428.75 101.29,431.68C102.66,431.87 175.09,431.99 262.23,431.94L420.68,431.84L425.66,430.38C443.16,425.24 457.2,412.9 463.63,397.01L466.31,390.37L466.54,285.61C466.78,170.35 467.03,176.67 461.73,165.55C454.57,150.55 438.52,138.72 421.12,135.62C416.54,134.8 405.12,134.49 378.17,134.47L341.46,134.44L341.46,122.17C341.46,93.58 327.7,73.88 302.47,66.36C299.05,65.33 296.12,64.18 295.97,63.8C295.82,63.41 280.77,63.1 262.52,63.1L229.34,63.1zM262.94,177.12C288.87,177.89 315.08,188.09 336.48,209.83C410.49,284.98 344.26,412.59 240.66,394.45C187.3,385.1 150.22,340.91 150.25,286.67C150.27,219.41 205.91,175.43 262.94,177.12z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="m225.82,332.48c0.96,-0.55 9.83,-10.21 19.7,-21.45l17.96,-20.45v-37.33,-37.33l-1.55,-1.92c-2.16,-2.66 -7.18,-2.66 -9.34,0l-1.55,1.92v34.72,34.72l-17,19.32c-15.5,17.62 -17,19.59 -17.01,22.37 -0.02,4.93 4.65,7.81 8.79,5.42z"/>
+  </group>
+</vector>
