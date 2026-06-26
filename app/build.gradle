@@ -96,6 +96,15 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Install debug builds side-by-side with the release app: a distinct
+            // applicationId (…trackworktime.debug) means sideloading a dev build never
+            // clashes with / clobbers the Play-signed release app or its data. The
+            // launcher label is suffixed too so the two apps are tellable apart.
+            applicationIdSuffix '.debug'
+            versionNameSuffix '-debug'
+            resValue "string", "app_name", "${app_title} debug"
+        }
         release {
             postprocessing {
                 removeUnusedCode = false
