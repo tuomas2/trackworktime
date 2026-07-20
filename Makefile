@@ -32,6 +32,20 @@ bundle:
 	JAVA_HOME=$(JAVA_HOME) ./gradlew bundleRelease
 	@echo "✓ AAB: $(AAB)"
 
+# Build a signed release APK for direct sideloading / sharing (the AAB above is
+# for Play upload; this APK is directly installable with `adb install`). Same
+# signing path as `bundle` (keystore.properties.gpg). Uses the JDK-21 JAVA_HOME
+# above — run this via `make`, NOT a bare `./gradlew assembleRelease`, or the
+# ambient JDK 17 fails on PebbleKit Android 2's Java-21 bytecode. The output
+# filename carries the version + build time, so glob for the newest one.
+release-apk:
+	@echo "Building release APK (signing via keystore.properties.gpg)..."
+	JAVA_HOME=$(JAVA_HOME) ./gradlew :app:assembleRelease
+	@apk=$$(ls -t app/build/outputs/apk/release/*.apk 2>/dev/null | head -1); \
+	test -n "$$apk" || { echo "No APK produced under app/build/outputs/apk/release/"; exit 1; }; \
+	echo "✓ APK: $$apk"; \
+	case "$$apk" in *-unsigned.apk) echo "  NOTE: UNSIGNED — keystore.properties.gpg not found/decryptable (release signing keys are host-only).";; esac
+
 # Upload an already-built AAB + en-US changelog for the current versionCode.
 # Does NOT rebuild — run `make bundle` first. Split from deploy so the two YubiKey
 # touches (keystore sign + gpg decrypt) don't race the touch window.
@@ -82,4 +96,4 @@ promote: _require-key
 	  --track_promote_to $(TO) \
 	  --version_code $(VERSION)
 
-.PHONY: _require-key increment-version bundle upload deploy fastlane-supply fastlane-validate fastlane-auth-check promote
+.PHONY: _require-key increment-version bundle release-apk upload deploy fastlane-supply fastlane-validate fastlane-auth-check promote
