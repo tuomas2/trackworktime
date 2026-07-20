@@ -1,0 +1,3 @@
+• Create or reactivate tasks directly from the start button on the main screen (a613d22)
+• Update notification icon to match the redesigned app icon (briefcase + clock) (2444f62)
+• Fix stale task tag on clock-in when user edits a pre-filled default task (579c799)
