@@ -478,6 +478,15 @@ public class WorkTimeTrackerActivity extends AppCompatActivity
 		binding.main.text.clearFocus();
 
 		Task selectedTask = (Task) binding.main.task.getTag();
+		// The tag is set programmatically by selectTaskInAutoComplete()/refreshView() and is not
+		// cleared when the user edits the field, so it can be stale. Only trust it if it still
+		// matches the displayed text; otherwise fall through to text/resolver handling below.
+		String taskText = binding.main.task.getText() == null
+			? ""
+			: binding.main.task.getText().toString();
+		if (selectedTask != null && !selectedTask.toString().equals(taskText)) {
+			selectedTask = null;
+		}
 		if (selectedTask == null && tasksAdapter != null && tasksAdapter.getCount() > 0) {
 			// Fallback: try to find task by displayed text
 			String text = binding.main.task.getText().toString();
