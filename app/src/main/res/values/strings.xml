@@ -48,6 +48,10 @@
     <string name="new_task">New Task</string>
     <string name="new_event">New Event</string>
     <string name="enter_new_task_name">Enter the new task name:</string>
+    <string name="create_task_title">Create new task?</string>
+    <string name="create_task_question">Create a new task “%1$s” and start tracking it?</string>
+    <string name="reactivate_task_title">Reactivate task?</string>
+    <string name="reactivate_task_question">Task “%1$s” exists but is inactive. Reactivate it and start tracking?</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="rename_task">Rename Task</string>
