@@ -77,6 +77,7 @@ import org.zephyrsoft.trackworktime.util.FileUtil;
 import org.zephyrsoft.trackworktime.util.ForeignCall;
 import org.zephyrsoft.trackworktime.util.PermissionsUtil;
 import org.zephyrsoft.trackworktime.util.PreferencesUtil;
+import org.zephyrsoft.trackworktime.util.TaskInputResolver;
 import org.zephyrsoft.trackworktime.util.ThemeUtil;
 import org.zephyrsoft.trackworktime.weektimes.WeekAdapter;
 import org.zephyrsoft.trackworktime.weektimes.WeekIndexConverter;
@@ -491,8 +492,74 @@ public class WorkTimeTrackerActivity extends AppCompatActivity
 		String description = binding.main.text.getText() == null
 			? null
 			: binding.main.text.getText().toString();
-		timerManager.startTracking(minutesToPredate, selectedTask, description, TimerManager.EventOrigin.MAIN_SCREEN_BUTTON);
+
+		if (selectedTask != null) {
+			performClockIn(minutesToPredate, selectedTask, description);
+			return;
+		}
+
+		// No task picked from the dropdown: decide from the typed text.
+		String typed = binding.main.task.getText() == null
+			? null
+			: binding.main.task.getText().toString();
+		TaskInputResolver.Resolution resolution =
+			TaskInputResolver.resolve(typed, dao.getAllTasks());
+		switch (resolution.kind) {
+			case USE_EXISTING:
+				performClockIn(minutesToPredate, resolution.task, description);
+				break;
+			case NONE:
+				// nothing typed -> keep default-task fallback in TimerManager
+				performClockIn(minutesToPredate, null, description);
+				break;
+			case REACTIVATE:
+				confirmReactivateTask(minutesToPredate, resolution.task, description);
+				break;
+			case CREATE:
+				confirmCreateTask(minutesToPredate, resolution.newName, description);
+				break;
+		}
+	}
+
+	private void performClockIn(int minutesToPredate, Task task, String description) {
+		timerManager.startTracking(minutesToPredate, task, description,
+			TimerManager.EventOrigin.MAIN_SCREEN_BUTTON);
 		refreshView();
+	}
+
+	private void confirmCreateTask(int minutesToPredate, String newName, String description) {
+		new AlertDialog.Builder(this)
+			.setTitle(R.string.create_task_title)
+			.setMessage(getString(R.string.create_task_question, newName))
+			.setPositiveButton(R.string.ok, (dialog, which) -> {
+				Task created = dao.insertTask(new Task(null, newName, 1, 0, 0));
+				Logger.debug("created task on clock-in: {}", created);
+				setupTasksAdapter();
+				selectTaskInAutoComplete(created);
+				performClockIn(minutesToPredate, created, description);
+			})
+			.setNegativeButton(R.string.cancel, (dialog, which) -> {
+				// do nothing: no clock-in, no default-task fallback
+			})
+			.show();
+	}
+
+	private void confirmReactivateTask(int minutesToPredate, Task task, String description) {
+		new AlertDialog.Builder(this)
+			.setTitle(R.string.reactivate_task_title)
+			.setMessage(getString(R.string.reactivate_task_question, task.getName()))
+			.setPositiveButton(R.string.ok, (dialog, which) -> {
+				task.setActive(1);
+				dao.updateTask(task);
+				Logger.debug("reactivated task on clock-in: {}", task);
+				setupTasksAdapter();
+				selectTaskInAutoComplete(task);
+				performClockIn(minutesToPredate, task, description);
+			})
+			.setNegativeButton(R.string.cancel, (dialog, which) -> {
+				// do nothing: no clock-in, no default-task fallback
+			})
+			.show();
 	}
 
 	public void setTarget(DayOfWeek day) {
