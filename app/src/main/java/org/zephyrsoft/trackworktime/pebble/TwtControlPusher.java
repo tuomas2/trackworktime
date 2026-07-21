@@ -36,21 +36,32 @@ import org.zephyrsoft.trackworktime.util.Updatable;
  */
 public class TwtControlPusher implements Updatable {
 
+    /** See {@link PebbleStatusPusher#update()} — collapses the notify burst into one push. */
+    private static final long COALESCE_DELAY_MS = 300;
+
     private final Context context;
     private final SharedPreferences preferences;
     private final TimerManager timerManager;
     private final DAO dao;
+    private final CoalescingRunner coalescer;
 
     public TwtControlPusher(Context context, SharedPreferences preferences,
-                            TimerManager timerManager, DAO dao) {
+                            TimerManager timerManager, DAO dao,
+                            CoalescingRunner.Scheduler scheduler) {
         this.context = context.getApplicationContext();
         this.preferences = preferences;
         this.timerManager = timerManager;
         this.dao = dao;
+        this.coalescer = new CoalescingRunner(scheduler, COALESCE_DELAY_MS, this::sendNow);
     }
 
     @Override
     public void update() {
+        // Coalesce the burst and run the (DB-heavy, BLE-blocking) send off the calling thread.
+        coalescer.trigger();
+    }
+
+    private void sendNow() {
         if (!preferences.getBoolean(Key.STATUS_ON_PEBBLE.getName(), false)) {
             return;
         }

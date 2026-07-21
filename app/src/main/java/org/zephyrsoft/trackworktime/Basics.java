@@ -60,6 +60,8 @@ import org.zephyrsoft.trackworktime.location.LocationTrackerService;
 import org.zephyrsoft.trackworktime.location.WifiTrackerService;
 import org.zephyrsoft.trackworktime.model.PeriodEnum;
 import org.zephyrsoft.trackworktime.options.Key;
+import org.zephyrsoft.trackworktime.pebble.CoalescingRunner;
+import org.zephyrsoft.trackworktime.pebble.HandlerScheduler;
 import org.zephyrsoft.trackworktime.pebble.PebbleStatusPusher;
 import org.zephyrsoft.trackworktime.pebble.TwtControlPusher;
 import org.zephyrsoft.trackworktime.timer.TimeCalculator;
@@ -129,11 +131,18 @@ public class Basics {
         // Outbound watchface status pushes on every tracking change. Inbound commands and
         // app-open pushes are handled by PebbleListenerService (PebbleKit Android 2), declared
         // in the manifest — no runtime broadcast-receiver registration needed.
-        pebbleStatusPusher = new PebbleStatusPusher(context, preferences, timerManager, dao);
+        // A single start/stop/switch fans out into several notifyListeners() passes; both pushers
+        // coalesce that burst into one push (of the final state) on a shared background thread, so
+        // the watch link isn't flooded with identical transmissions and the UI thread isn't blocked
+        // on DB scans + the Core-app service bind. See CoalescingRunner / HandlerScheduler.
+        CoalescingRunner.Scheduler pebblePushScheduler = new HandlerScheduler();
+        pebbleStatusPusher = new PebbleStatusPusher(context, preferences, timerManager, dao,
+                pebblePushScheduler);
         timerManager.addListener(pebbleStatusPusher);
         // Same for the TWT Control watchapp, so its status/list stays live on changes from
         // any origin (not just its own commands or app-open).
-        timerManager.addListener(new TwtControlPusher(context, preferences, timerManager, dao));
+        timerManager.addListener(new TwtControlPusher(context, preferences, timerManager, dao,
+                pebblePushScheduler));
 
         initTinyLog();
 

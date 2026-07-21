@@ -23,22 +23,33 @@ import java.util.Map;
  */
 public class PebbleStatusPusher implements Updatable {
 
+    /**
+     * How long to wait after the last tracking-change notification before actually pushing. A
+     * single start/stop/switch fans out into up to six {@code notifyListeners()} passes; this
+     * window collapses the whole burst into one push of the final state. See {@link CoalescingRunner}.
+     */
+    private static final long COALESCE_DELAY_MS = 300;
+
     private final SharedPreferences preferences;
     private final TimerManager timerManager;
     private final DAO dao;
     private final PebbleStatusSender sender;
+    private final CoalescingRunner coalescer;
 
     public PebbleStatusPusher(Context context, SharedPreferences preferences,
-                              TimerManager timerManager, DAO dao) {
+                              TimerManager timerManager, DAO dao,
+                              CoalescingRunner.Scheduler scheduler) {
         this.preferences = preferences;
         this.timerManager = timerManager;
         this.dao = dao;
         this.sender = new PebbleStatusSender(context);
+        this.coalescer = new CoalescingRunner(scheduler, COALESCE_DELAY_MS, this::pushStatus);
     }
 
     @Override
     public void update() {
-        pushStatus();
+        // Coalesce the burst and run the (DB-heavy, BLE-blocking) push off the calling thread.
+        coalescer.trigger();
     }
 
     /** Recompute the current status and send it to the watchface (no-op if the option is off). */
