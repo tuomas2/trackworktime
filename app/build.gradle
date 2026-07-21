@@ -66,8 +66,8 @@ android {
             buildConfigField "String", "APP_NAME", "\"${app_title} ${app_suffix}\""
         }
 
-        versionCode 74                      // increment after every release (for the next development cycle)
-        versionName '1.2.74'                // = MAJOR.MINOR.versionCode; bump via scripts/increment-version.sh
+        versionCode 75                      // increment after every release (for the next development cycle)
+        versionName '1.2.75'                // = MAJOR.MINOR.versionCode; bump via scripts/increment-version.sh
 
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 

@@ -1,0 +1,2 @@
+• Fixed watch lag and stale Pebble status by coalescing redundant status updates (6072a20)
+• Fixed crash when Pebble service binding fails during app replacement (e0ec0d0)
