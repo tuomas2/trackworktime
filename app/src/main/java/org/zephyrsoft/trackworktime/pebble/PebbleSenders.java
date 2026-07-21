@@ -26,11 +26,25 @@ final class PebbleSenders {
         try {
             sender.sendDataToPebble(uuid, dict, results -> {
                 Logger.debug("{} sent to {}: {}", label, uuid, results);
-                sender.close();
+                closeQuietly(sender);
             });
         } catch (Exception e) {
             Logger.warn(e, "failed to send {} to Pebble", label);
+            closeQuietly(sender);
+        }
+    }
+
+    /**
+     * Closes the sender, swallowing the {@link IllegalArgumentException} that
+     * {@code unbindService} throws when the Core app's service was never actually bound (e.g. the
+     * Core app is being replaced/removed mid-send). Unbinding a service that was never registered
+     * is harmless, so there is nothing to recover from.
+     */
+    private static void closeQuietly(DefaultJavaPebbleSender sender) {
+        try {
             sender.close();
+        } catch (IllegalArgumentException e) {
+            Logger.debug(e, "ignoring failure to close Pebble sender (service was not bound)");
         }
     }
 }
