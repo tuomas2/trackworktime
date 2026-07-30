@@ -1,0 +1,2 @@
+• Optimized Pebble watch status updates by deduplicating identical messages and coalescing status pushes, reducing unnecessary Bluetooth traffic and battery drain (d488f83, 6072a20)
+• Fixed crash when Pebble sender closes without being bound (e0ec0d0)
