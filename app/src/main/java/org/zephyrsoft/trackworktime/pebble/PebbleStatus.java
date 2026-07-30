@@ -80,4 +80,52 @@ public final class PebbleStatus {
     /** GROSS (no auto-pause) day total, excluding the running segment — the watch's
      *  denominator for the unbudgeted task percent (gross/gross, see PebbleTaskTimes). */
     public int dayGrossBeforeMin() { return dayGrossBeforeMin; }
+
+    /**
+     * Value equality over every field that is actually sent to the watch. This is what lets
+     * {@link PebbleStatusPusher} skip a push whose payload would be byte-identical to the last
+     * one — the per-minute watchdog would otherwise wake the watchface over Bluetooth 1440
+     * times a day with unchanged data.
+     * <p>
+     * This is only meaningful because the snapshot is time-invariant by construction: the
+     * "before" fields exclude the running segment (the watch reconstructs
+     * {@code worked = before + running} from {@link #segmentStartEpoch()}), so while tracking
+     * continues undisturbed the value does not drift minute to minute. {@code nowEpoch} is an
+     * input to {@link #of} but deliberately not a field.
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof PebbleStatus)) {
+            return false;
+        }
+        PebbleStatus other = (PebbleStatus) o;
+        return tracking == other.tracking
+                && taskId == other.taskId
+                && workedBeforeMin == other.workedBeforeMin
+                && taskWorkedBeforeMin == other.taskWorkedBeforeMin
+                && segmentStartEpoch == other.segmentStartEpoch
+                && dailyTargetMin == other.dailyTargetMin
+                && taskTotalBeforeMin == other.taskTotalBeforeMin
+                && taskBudgetMin == other.taskBudgetMin
+                && dayGrossBeforeMin == other.dayGrossBeforeMin
+                && taskName.equals(other.taskName);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = tracking ? 1 : 0;
+        result = 31 * result + taskId;
+        result = 31 * result + taskName.hashCode();
+        result = 31 * result + workedBeforeMin;
+        result = 31 * result + taskWorkedBeforeMin;
+        result = 31 * result + (int) (segmentStartEpoch ^ (segmentStartEpoch >>> 32));
+        result = 31 * result + dailyTargetMin;
+        result = 31 * result + taskTotalBeforeMin;
+        result = 31 * result + taskBudgetMin;
+        result = 31 * result + dayGrossBeforeMin;
+        return result;
+    }
 }

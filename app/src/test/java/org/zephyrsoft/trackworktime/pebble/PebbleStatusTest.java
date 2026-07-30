@@ -116,4 +116,63 @@ public class PebbleStatusTest {
         PebbleStatus s = PebbleStatus.of(true, 1, null, 0, 0, 5L, 5L, 450, 0, 0, 0);
         assertThat(s.taskName()).isEqualTo("");
     }
+
+    // ---------------------------------------------------------------- equality
+    // The pusher dedupes on equals() so the watchface is not woken over Bluetooth every
+    // minute with a byte-identical status. These tests pin the property that makes that
+    // sound: while tracking continues undisturbed, the snapshot does NOT drift with time.
+
+    @Test
+    public void tracking_snapshotIsTimeInvariant_soAMinuteLaterIsEqual() {
+        long start = 1_000_000L;
+        // one minute later BOTH the day total and the running segment have grown by 1min,
+        // which is exactly why the "before" fields are stored instead of the totals
+        PebbleStatus now = PebbleStatus.of(
+                true, 7, "Customer A", 130, 80, start, start + 30 * 60, 450, 300, 1200, 160);
+        PebbleStatus aMinuteLater = PebbleStatus.of(
+                true, 7, "Customer A", 131, 81, start, start + 31 * 60, 450, 301, 1200, 161);
+        assertThat(aMinuteLater).isEqualTo(now);
+        assertThat(aMinuteLater.hashCode()).isEqualTo(now.hashCode());
+    }
+
+    @Test
+    public void notTracking_repeatedSnapshotsAreEqual() {
+        PebbleStatus a = PebbleStatus.of(false, 0, "", 90, 0, 0L, 1_000_000L, 450, 300, 1200, 95);
+        PebbleStatus b = PebbleStatus.of(false, 0, "", 90, 0, 0L, 1_000_600L, 450, 300, 1200, 95);
+        assertThat(b).isEqualTo(a);
+    }
+
+    @Test
+    public void realChangesAreNotEqual() {
+        long start = 1_000_000L;
+        PebbleStatus base = PebbleStatus.of(
+                true, 7, "Customer A", 130, 80, start, start + 30 * 60, 450, 300, 1200, 160);
+
+        // stopped tracking
+        assertThat(PebbleStatus.of(false, 7, "Customer A", 130, 80, 0L, start + 30 * 60, 450, 300, 1200, 160))
+                .isNotEqualTo(base);
+        // switched task
+        assertThat(PebbleStatus.of(true, 8, "Customer B", 130, 80, start, start + 30 * 60, 450, 300, 1200, 160))
+                .isNotEqualTo(base);
+        // new segment (clock out + back in)
+        assertThat(PebbleStatus.of(true, 7, "Customer A", 130, 80, start + 600, start + 30 * 60, 450, 300, 1200, 160))
+                .isNotEqualTo(base);
+        // daily target changed
+        assertThat(PebbleStatus.of(true, 7, "Customer A", 130, 80, start, start + 30 * 60, 480, 300, 1200, 160))
+                .isNotEqualTo(base);
+        // budget changed
+        assertThat(PebbleStatus.of(true, 7, "Customer A", 130, 80, start, start + 30 * 60, 450, 300, 900, 160))
+                .isNotEqualTo(base);
+        // an edit added time earlier in the day -> workedBefore moves
+        assertThat(PebbleStatus.of(true, 7, "Customer A", 145, 80, start, start + 30 * 60, 450, 300, 1200, 160))
+                .isNotEqualTo(base);
+    }
+
+    @Test
+    public void equalsHandlesNullAndOtherTypes() {
+        PebbleStatus s = PebbleStatus.of(true, 1, "x", 0, 0, 5L, 5L, 450, 0, 0, 0);
+        assertThat(s.equals(null)).isFalse();
+        assertThat(s.equals("not a status")).isFalse();
+        assertThat(s.equals(s)).isTrue();
+    }
 }

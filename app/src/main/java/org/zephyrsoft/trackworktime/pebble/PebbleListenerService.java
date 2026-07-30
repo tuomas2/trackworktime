@@ -89,7 +89,7 @@ public final class PebbleListenerService extends BaseJavaPebbleListenerService {
             Context context = getApplicationContext();
             Basics basics = Basics.get(context);
             if (TwtPebbleKeys.TIMESTYLE_UUID.equals(watchappUuid)) {
-                basics.getPebbleStatusPusher().pushStatus();
+                basics.getPebbleStatusPusher().pushStatusForced();
             } else if (TwtControlKeys.CONTROL_UUID.equals(watchappUuid)) {
                 new TwtControlSender(context, basics.getTimerManager(), basics.getDao())
                         .sendStatusAndList();

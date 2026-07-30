@@ -36,6 +36,20 @@ public class PebbleStatusPusher implements Updatable {
     private final PebbleStatusSender sender;
     private final CoalescingRunner coalescer;
 
+    /**
+     * Last status actually handed to the sender, or null when the next push must go out
+     * unconditionally. Guards against waking the watchface over Bluetooth with a payload
+     * identical to the one it already has: this pusher is on the per-minute watchdog path
+     * ({@code Constants.REPEAT_TIME} → {@code notifyListeners()}), so without it the watch
+     * received ~1440 identical 10-key messages a day — each of which also cost flash writes
+     * on the watch. {@link PebbleStatus} is time-invariant while tracking continues, so an
+     * unchanged minute really does produce an equal snapshot.
+     * <p>
+     * Accessed only from the coalescer's scheduler thread and from {@link #pushStatusForced}
+     * (the watchapp-opened callback), hence volatile.
+     */
+    private volatile PebbleStatus lastSent;
+
     public PebbleStatusPusher(Context context, SharedPreferences preferences,
                               TimerManager timerManager, DAO dao,
                               CoalescingRunner.Scheduler scheduler) {
@@ -52,7 +66,10 @@ public class PebbleStatusPusher implements Updatable {
         coalescer.trigger();
     }
 
-    /** Recompute the current status and send it to the watchface (no-op if the option is off). */
+    /**
+     * Recompute the current status and send it to the watchface (no-op if the option is off, or
+     * if the resulting status is identical to the last one sent).
+     */
     public void pushStatus() {
         try {
             if (!preferences.getBoolean(Key.STATUS_ON_PEBBLE.getName(), false)) {
@@ -107,9 +124,28 @@ public class PebbleStatusPusher implements Updatable {
                     tracking, taskId, taskName, totalWorkedTodayMin, taskWorkedTodayMin,
                     segmentStartEpoch, nowEpoch, dailyTargetMin, taskAllTimeMin, taskBudgetMin,
                     dayGrossTodayMin);
+            if (status.equals(lastSent)) {
+                // identical payload -- the watch already shows exactly this, so sending it would
+                // only cost a BLE wakeup on both ends plus flash writes on the watch
+                return;
+            }
             sender.send(status);
+            lastSent = status;
         } catch (Exception e) {
+            // do NOT update lastSent here: a failed send means the watch may not have the value,
+            // so the next push must be allowed through
             Logger.warn(e, "failed to push TWT status to Pebble");
         }
+    }
+
+    /**
+     * Push unconditionally, ignoring the dedupe. Used when a watchapp is opened: the watchface
+     * is relaunched whenever any watchapp runs, and it restores its strip from its own persisted
+     * copy, but we cannot know that copy is current (it may predate changes made while the
+     * watchface was not running), so the freshest state is always re-sent.
+     */
+    public void pushStatusForced() {
+        lastSent = null;
+        pushStatus();
     }
 }
